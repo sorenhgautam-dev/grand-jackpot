@@ -5,6 +5,10 @@
   --hairline: color-mix(in oklab, var(--color-ink) 16%, var(--color-paper));
   --hairline-dark: color-mix(in oklab, var(--color-paper) 22%, var(--color-felt));
   --focus: var(--color-red);
+  /* Light: the warm spotlight under the cursor, and the sheen across a tilted photo. */
+  --glow: color-mix(in oklab, var(--color-copper) 55%, transparent);
+  --glare: color-mix(in oklab, var(--color-paper) 42%, transparent);
+  --chip-spot: color-mix(in oklab, var(--color-paper) 82%, var(--color-ink));
 }
 
 @layer base {

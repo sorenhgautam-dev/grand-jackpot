@@ -36,9 +36,13 @@ const sources = await Promise.all(
   ),
 );
 const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
+
+/** The name, letter by letter, for the 3D intro. Screen readers get the name whole. */
+let count = 0;
+const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char, i: count++ })));
 ---
 
-<section class="hero" data-hero aria-labelledby="hero-title">
+<section class="hero" data-hero data-pointer aria-labelledby="hero-title">
   <picture class="photo">
     {sources.map((source) => (
       <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
@@ -52,14 +56,28 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
       loading="eager"
     />
   </picture>
-  <div class="text wrap">
-    <h1 id="hero-title" lang="en" style="--i: 0">
-      {site.name}
+  <div class="text wrap" style={`--letters: ${count}`}>
+    <h1 id="hero-title" lang="en">
+      <span class="visually-hidden">{site.name}</span>
+      <span class="letters" aria-hidden="true">
+        {words.map((letters, index) => (
+          <>
+            {index > 0 && ' '}
+            <span class="word">
+              {letters.map(({ char, i }) => (
+                <span class="char" style={`--c: ${i}`}>
+                  {char}
+                </span>
+              ))}
+            </span>
+          </>
+        ))}
+      </span>
     </h1>
-    <p class="line" style="--i: 1">
+    <p class="line" style="--i: 0">
       {t.home.line}
     </p>
-    <div class="actions">
+    <div class="actions" style="--i: 1">
       <OpeningStatus locale={locale} />
       <div class="buttons">
         <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
@@ -78,6 +96,11 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
 <style>
   .hero {
     --focus: var(--color-paper);
+    --mx: 0;
+    --my: 0;
+    view-timeline: --hero block;
+    /* Measure from the window's top edge, not below the header's scroll padding. */
+    view-timeline-inset: 0;
     position: relative;
     display: grid;
     align-items: end;
@@ -96,9 +119,37 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
     height: 100%;
   }
 
+  /* The photograph sits a little behind the glass and drifts against the pointer. */
+  .photo {
+    scale: 1.06;
+    translate: calc(var(--mx) * -1.25%) calc(var(--my) * -1.25%);
+    transition: translate var(--dur-follow) var(--ease-out);
+  }
+
   .photo img {
     object-fit: cover;
     object-position: 50% 40%;
+  }
+
+  /* A warm spotlight follows the pointer across the entrance. */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(
+      circle 32rem at var(--px, 50%) var(--py, 40%),
+      var(--glow),
+      transparent 70%
+    );
+    mix-blend-mode: overlay;
+    opacity: 0;
+    transition: opacity var(--dur-follow) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .hero[data-pointing]::before {
+    opacity: 1;
   }
 
   /* The one neutral scrim: under the header at the top, under the text at the foot. */
@@ -109,12 +160,15 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
     background:
       linear-gradient(to bottom, var(--scrim) 0, transparent calc(var(--header-height) * 2.25)),
       linear-gradient(to top, var(--scrim) 0, var(--scrim) 22%, transparent 64%);
+    z-index: 1;
     pointer-events: none;
   }
 
   .text {
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    translate: calc(var(--mx) * 0.75rem) calc(var(--my) * 0.5rem);
+    transition: translate var(--dur-follow) var(--ease-out);
     padding-block: 6rem max(2.5rem, env(safe-area-inset-bottom));
   }
 
@@ -122,6 +176,29 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
     margin: 0;
     font-size: var(--text-48);
     letter-spacing: -0.02em;
+  }
+
+  .word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .char {
+    display: inline-block;
+    transform-origin: 50% 100%;
+    transition:
+      translate var(--dur-base) var(--ease-out),
+      rotate var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+
+  /* Letters hop under the pointer. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .char:hover {
+      translate: 0 -0.12em;
+      rotate: -6deg;
+      color: var(--color-copper);
+    }
   }
 
   .line {
@@ -194,12 +271,66 @@ const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
     }
   }
 
-  :global([data-intro]) .photo img {
+  /* Each letter turns up out of the page, one after another. */
+  @keyframes flip {
+    from {
+      opacity: 0;
+      transform: perspective(var(--perspective)) translateY(0.35em) rotateX(-95deg);
+    }
+  }
+
+  :global([data-intro]) .photo {
     animation: settle var(--dur-hero) var(--ease-out) both;
   }
 
-  :global([data-intro]) :is(h1, .line) {
+  :global([data-intro]) .char {
+    animation: flip var(--dur-letter) var(--ease-out) both;
+    animation-delay: calc(var(--intro-delay) + var(--c) * var(--stagger-letter));
+  }
+
+  :global([data-intro]) :is(.line, .actions) {
     animation: rise var(--dur-rise) var(--ease-out) both;
-    animation-delay: calc(var(--intro-delay) + var(--i) * var(--stagger-hero));
+    animation-delay: calc(
+      var(--intro-delay) + var(--letters) * var(--stagger-letter) + var(--i) * var(--stagger-hero)
+    );
+  }
+
+  /* Scrolling away, the entrance sinks back and the words lift off and tip over. */
+  @keyframes sink {
+    to {
+      scale: 1.22;
+      translate: 0 16%;
+    }
+  }
+
+  @keyframes lift-off {
+    to {
+      opacity: 0;
+      transform: perspective(var(--perspective)) translateY(-14%) rotateX(32deg);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .photo img {
+        animation: sink linear both;
+        animation-timeline: --hero;
+        animation-range: exit 0% exit 100%;
+      }
+
+      .text {
+        transform-origin: 50% 100%;
+        animation: lift-off linear both;
+        animation-timeline: --hero;
+        animation-range: exit 0% exit 75%;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photo,
+    .text {
+      translate: none;
+    }
   }
 </style>

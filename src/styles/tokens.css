@@ -76,6 +76,23 @@
   --press-scale: 0.98;
   --hero-scale: 1.04;
 
+  /* Depth and pointer motion. */
+  --perspective: 900px;
+  --dur-tilt: 600ms;
+  --dur-follow: 700ms;
+  --dur-door: 640ms;
+  --dur-letter: 760ms;
+  --dur-bob: 5200ms;
+  --dur-spin: 9s;
+  --dur-spin-fast: 1.6s;
+  --stagger-letter: 32ms;
+  --tilt-max: 7;
+  --magnet: 0.28;
+  --cursor-size: 2.25rem;
+  --cursor-dot: 0.375rem;
+  --cursor-grow: 1.9;
+  --progress-height: 2px;
+
   /* The one neutral scrim, for text over photographs. */
   --scrim: rgb(29 27 24 / 0.72);
 

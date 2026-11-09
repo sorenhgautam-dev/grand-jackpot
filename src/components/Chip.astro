@@ -1,0 +1,158 @@
+---
+/**
+ * A casino chip built in CSS 3D: two faces and a stack of rims for its edge.
+ * It floats, turns as the page scrolls, and leans with the pointer inside a [data-pointer] scene.
+ * Decorative only.
+ */
+interface Props {
+  tone: 'red' | 'copper' | 'ink';
+  suit: 'spade' | 'heart' | 'diamond' | 'club';
+  class?: string | undefined;
+}
+
+const { tone, suit, class: className } = Astro.props;
+const suits = { spade: '♠︎', heart: '♥︎', diamond: '♦︎', club: '♣︎' };
+const rims = Array.from({ length: 12 }, (_, index) => index);
+---
+
+<div class:list={['chip', className]} data-tone={tone} aria-hidden="true">
+  <div class="lean">
+    <div class="turn">
+      {rims.map((index) => (
+        <span class="rim" style={`--z: ${index}`} />
+      ))}
+      <span class="face back">
+        <span class="suit">{suits[suit]}</span>
+      </span>
+      <span class="face front">
+        <span class="suit">{suits[suit]}</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .chip {
+    --size: 8rem;
+    --depth: 1;
+    --thick: 12;
+    --pose-x: 58deg;
+    --pose-y: -18deg;
+    --delay: 0ms;
+    --rim: color-mix(in oklab, var(--tone) 70%, var(--color-ink));
+    --rim-spot: var(--chip-spot);
+    position: absolute;
+    width: var(--size);
+    aspect-ratio: 1;
+    perspective: var(--perspective);
+    translate: calc(var(--mx, 0) * var(--depth) * 1.5rem) calc(var(--my, 0) * var(--depth) * 1rem);
+    transition: translate var(--dur-follow) var(--ease-out);
+  }
+
+  [data-tone='red'] {
+    --tone: var(--color-red);
+  }
+
+  [data-tone='copper'] {
+    --tone: var(--color-copper);
+  }
+
+  [data-tone='ink'] {
+    --tone: var(--color-ink);
+  }
+
+  .lean {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(calc(var(--my, 0) * -18deg)) rotateY(calc(var(--mx, 0) * 22deg));
+    transition: transform var(--dur-follow) var(--ease-out);
+    animation: bob var(--dur-bob) var(--ease-in-out) var(--delay) infinite alternate;
+  }
+
+  .turn {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--pose-x)) rotateY(var(--pose-y));
+  }
+
+  .rim,
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  /* The edge: stacked rims, striped where the face's spots run round the side. */
+  .rim {
+    background: repeating-conic-gradient(var(--rim-spot) 0 14deg, var(--rim) 14deg 45deg);
+    transform: translateZ(calc(var(--z) * -1px));
+  }
+
+  .face {
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle, transparent 0 55%, var(--color-paper) 55% 58%, transparent 58%),
+      radial-gradient(circle, var(--tone) 0 66%, transparent 66%),
+      repeating-conic-gradient(var(--color-paper) 0 14deg, var(--tone) 14deg 45deg);
+    box-shadow: inset 0 0 0 2px var(--rim);
+    backface-visibility: hidden;
+  }
+
+  .front {
+    transform: translateZ(1px);
+  }
+
+  .back {
+    transform: translateZ(calc(var(--thick) * -1px)) rotateY(180deg);
+  }
+
+  .suit {
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: calc(var(--size) * 0.3);
+    line-height: 1;
+  }
+
+  @keyframes bob {
+    from {
+      translate: 0 -0.5rem;
+    }
+
+    to {
+      translate: 0 0.5rem;
+    }
+  }
+
+  /* Scrolling past, the chip turns over and over. */
+  @keyframes turn {
+    from {
+      transform: rotateX(var(--pose-x)) rotateY(calc(var(--pose-y) - 200deg));
+    }
+
+    to {
+      transform: rotateX(var(--pose-x)) rotateY(calc(var(--pose-y) + 200deg));
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .turn {
+        animation: turn linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chip,
+    .lean {
+      translate: none;
+      transition: none;
+      animation: none;
+    }
+  }
+</style>

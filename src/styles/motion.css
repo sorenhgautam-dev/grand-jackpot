@@ -1,0 +1,248 @@
+/*
+ * Motion that belongs to no single component: the chip cursor, tilting photographs,
+ * the scroll thread and the scroll-driven reveals. Everything here is decoration over
+ * content that is already visible; with reduced motion, or in browsers without
+ * scroll-driven animations, the page simply stands still.
+ */
+
+/* ---------- The chip cursor (fine pointers; injected by scripts/motion.ts) ---------- */
+
+html[data-cursor]:not(:has(dialog[open])),
+html[data-cursor]:not(:has(dialog[open])) * {
+  cursor: none;
+}
+
+html[data-cursor]:not(:has(dialog[open]))
+  :is(textarea, select, input:not([type='radio'], [type='checkbox'])) {
+  cursor: auto;
+}
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  opacity: 0;
+  transition: opacity var(--dur-quick) var(--ease-out);
+}
+
+.cursor[data-visible] {
+  opacity: 1;
+}
+
+html:has(dialog[open]) .cursor {
+  display: none;
+}
+
+.cursor-lag,
+.cursor-pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* The ring is a casino chip's edge: a thin rim and eight spots. */
+.cursor-ring {
+  position: absolute;
+  width: var(--cursor-size);
+  height: var(--cursor-size);
+  margin: calc(var(--cursor-size) / -2);
+  border: 1.5px solid var(--color-paper);
+  border-radius: 50%;
+  transition:
+    scale var(--dur-base) var(--ease-out),
+    opacity var(--dur-quick) var(--ease-out);
+}
+
+.cursor-ring::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--color-paper) 0 16deg, transparent 16deg 45deg);
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - 4px),
+    var(--color-ink) calc(100% - 3.5px)
+  );
+  animation: spin var(--dur-spin) linear infinite;
+}
+
+.cursor-dot {
+  position: absolute;
+  width: var(--cursor-dot);
+  height: var(--cursor-dot);
+  margin: calc(var(--cursor-dot) / -2);
+  border-radius: 50%;
+  background: var(--color-paper);
+  transition:
+    scale var(--dur-quick) var(--ease-out),
+    opacity var(--dur-quick) var(--ease-out);
+}
+
+.cursor[data-state='link'] .cursor-ring {
+  scale: var(--cursor-grow);
+}
+
+.cursor[data-state='link'] .cursor-ring::before {
+  animation-duration: var(--dur-spin-fast);
+}
+
+.cursor[data-state='link'] .cursor-dot {
+  scale: 0;
+}
+
+.cursor[data-down] .cursor-ring {
+  scale: 0.8;
+}
+
+.cursor[data-state='link'][data-down] .cursor-ring {
+  scale: calc(var(--cursor-grow) * 0.85);
+}
+
+.cursor[data-state='text'] :is(.cursor-ring, .cursor-dot) {
+  opacity: 0;
+}
+
+@keyframes spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* ---------- Tilting photographs (data-tilt; scripts/motion.ts sets the angles) ---------- */
+
+[data-tilt] {
+  transform: perspective(var(--perspective)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform var(--dur-tilt) var(--ease-out);
+}
+
+[data-tilt][data-tilting] {
+  transition-duration: var(--dur-quick);
+}
+
+[data-tilt]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    var(--glare),
+    transparent 55%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity var(--dur-tilt) var(--ease-out);
+  pointer-events: none;
+}
+
+[data-tilt][data-tilting]::after {
+  opacity: 1;
+}
+
+/* Page titles start a hair above transparent, so the browser counts them as painted at once
+   and the largest contentful paint isn't held back by the animation. */
+@keyframes rise-in {
+  from {
+    opacity: 0.01;
+    transform: perspective(var(--perspective)) translateY(0.6em) rotateX(-24deg);
+  }
+}
+
+/* ---------- Scroll-driven ---------- */
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Photographs open like a curtain as they arrive, and drift inside their frame. */
+@keyframes curtain {
+  from {
+    clip-path: inset(24% 8% 0 8%);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes drift {
+  from {
+    scale: 1.14;
+    translate: 0 -5%;
+  }
+
+  to {
+    scale: 1.14;
+    translate: 0 5%;
+  }
+}
+
+/* Headings stand up from the page as they scroll in. */
+@keyframes stand-up {
+  from {
+    opacity: 0;
+    transform: perspective(var(--perspective)) translateY(0.5em) rotateX(80deg);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: 30;
+      height: var(--progress-height);
+      background: var(--color-copper);
+      transform-origin: 0 50%;
+      animation: progress linear both;
+      animation-timeline: scroll(root block);
+      pointer-events: none;
+    }
+
+    .photo[data-ratio]:not([data-priority]) {
+      animation: curtain linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+
+    .photo[data-ratio] img {
+      animation: drift linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    /* The lightbox measures its thumbnails, so they keep still. */
+    [data-gallery] .photo[data-ratio] img {
+      animation: none;
+    }
+
+    main h2 {
+      transform-origin: 50% 100%;
+      animation: stand-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tilt],
+  [data-tilt]::after,
+  .cursor-ring,
+  .cursor-dot {
+    transition: none;
+  }
+
+  .cursor-ring::before {
+    animation: none;
+  }
+}

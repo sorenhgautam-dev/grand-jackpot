@@ -3,8 +3,10 @@ import { getImage } from 'astro:assets';
 import entrance from '../../assets/photos/entrance.jpg';
 import floor from '../../assets/photos/floor.jpg';
 import Button from '../../components/Button.astro';
+import Chip from '../../components/Chip.astro';
 import EventList from '../../components/EventList.astro';
 import Hero from '../../components/Hero.astro';
+import Marquee from '../../components/Marquee.astro';
 import HoursTable from '../../components/HoursTable.astro';
 import Photo from '../../components/Photo.astro';
 import Venue from '../../components/Venue.astro';
@@ -55,6 +57,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
       ratio="wide"
       sizes="(min-width: 64rem) 55vw, 100vw"
       class="gaming-photo"
+      tilt
     />
     <div class="gaming-text">
       <h2 id="gaming">{t.home.gaming}</h2>
@@ -72,6 +75,8 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     </div>
   </section>
 
+  <Marquee items={games.map((game) => game.data.title)} />
+
   <section class="dining wrap section" aria-labelledby="dining">
     <div class="aside">
       <h2 id="dining">{t.home.dining}</h2>
@@ -86,13 +91,20 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     </div>
   </section>
 
-  <section class="packages" data-surface="dark" aria-labelledby="packages">
+  <section class="packages" data-surface="dark" data-pointer aria-labelledby="packages">
     <div class="wrap packages-inner">
-      <h2 id="packages">{t.home.packages}</h2>
-      <p>{t.home.packagesText}</p>
-      <Button href={localePath(locale, '/packages/')} variant="secondary" tone="dark">
-        {t.common.seePackages}
-      </Button>
+      <div class="packages-text">
+        <h2 id="packages">{t.home.packages}</h2>
+        <p>{t.home.packagesText}</p>
+        <Button href={localePath(locale, '/packages/')} variant="secondary" tone="dark">
+          {t.common.seePackages}
+        </Button>
+      </div>
+      <div class="chips">
+        <Chip tone="red" suit="heart" class="chip-a" />
+        <Chip tone="copper" suit="diamond" class="chip-b" />
+        <Chip tone="ink" suit="spade" class="chip-c" />
+      </div>
     </div>
   </section>
 
@@ -186,7 +198,44 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   }
 
   .packages {
+    overflow: clip;
     padding-block: 4rem;
+  }
+
+  /* Three chips over the felt, at three depths. */
+  .chips {
+    position: relative;
+    height: 15rem;
+    margin-top: 2rem;
+  }
+
+  .chips :global(.chip-a) {
+    --size: 8.5rem;
+    --depth: 0.6;
+    --pose-x: 62deg;
+    --pose-y: -14deg;
+    top: 8%;
+    left: 4%;
+  }
+
+  .chips :global(.chip-b) {
+    --size: 6rem;
+    --depth: 1.2;
+    --pose-x: 48deg;
+    --pose-y: 24deg;
+    --delay: -1.8s;
+    top: 0;
+    right: 6%;
+  }
+
+  .chips :global(.chip-c) {
+    --size: 5rem;
+    --depth: 1.8;
+    --pose-x: 70deg;
+    --pose-y: -40deg;
+    --delay: -3.4s;
+    bottom: 4%;
+    left: 52%;
   }
 
   .packages-inner p {
@@ -274,17 +323,26 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 
     .packages-inner {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-      gap: 0 3rem;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: 4rem;
+      align-items: center;
     }
 
-    .packages-inner p {
-      margin-top: 0.5rem;
+    .chips {
+      height: 26rem;
+      margin-top: 0;
     }
 
-    .packages-inner :global(.button) {
-      grid-column: 2;
-      justify-self: start;
+    .chips :global(.chip-a) {
+      --size: 13rem;
+    }
+
+    .chips :global(.chip-b) {
+      --size: 9rem;
+    }
+
+    .chips :global(.chip-c) {
+      --size: 7.5rem;
     }
   }
 </style>

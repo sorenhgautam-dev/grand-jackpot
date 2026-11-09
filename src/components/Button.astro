@@ -46,6 +46,9 @@ const {
 
 <style>
   .button {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -63,8 +66,20 @@ const {
     cursor: pointer;
     transition:
       transform var(--dur-press) var(--ease-out),
+      translate var(--dur-follow) var(--ease-out),
       background-color var(--dur-quick) var(--ease-out),
       color var(--dur-quick) var(--ease-out);
+  }
+
+  /* A sheen crosses the primary button as the pointer arrives. */
+  [data-variant='primary']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 30%, var(--glare) 50%, transparent 70%);
+    translate: -110% 0;
+    pointer-events: none;
   }
 
   .button:active {
@@ -98,6 +113,11 @@ const {
   @media (hover: hover) {
     [data-variant='primary']:hover {
       background: var(--red-deep);
+    }
+
+    [data-variant='primary']:hover::after {
+      translate: 110% 0;
+      transition: translate var(--dur-follow) var(--ease-out);
     }
 
     [data-variant='secondary'][data-tone='light']:hover {

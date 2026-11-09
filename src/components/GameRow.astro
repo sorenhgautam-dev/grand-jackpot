@@ -15,7 +15,7 @@ const slug = slugOf(game.id);
 const href = localePath(locale, `/gaming/${slug}/`);
 ---
 
-<li class:list={['game', { 'has-photo': game.data.photo }]}>
+<li class:list={['game', { 'has-photo': game.data.photo }]} data-tilt-zone>
   {game.data.photo && (
     <Photo
       src={game.data.photo}
@@ -23,6 +23,7 @@ const href = localePath(locale, `/gaming/${slug}/`);
       ratio="landscape"
       sizes="(min-width: 48rem) 22rem, 100vw"
       transitionName={`game-${slug}-photo`}
+      tilt
     />
   )}
   <div class="words">

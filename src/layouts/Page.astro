@@ -42,7 +42,7 @@ const {
   imageAlt={photoAlt}
   indexable={indexable}
 >
-  <header class:list={['page-header wrap', { 'has-photo': photo }]}>
+  <header class:list={['page-header wrap', { 'has-photo': photo, arrives: !transitionKey }]}>
     <div class="text">
       <slot name="before-title" />
       <h1 style={transitionKey ? `view-transition-name: ${transitionKey}-title` : undefined}>
@@ -58,6 +58,7 @@ const {
         ratio="landscape"
         sizes="(min-width: 64rem) 50vw, 100vw"
         priority
+        tilt
         transitionName={transitionKey && `${transitionKey}-photo`}
         class="header-photo"
       />
@@ -87,6 +88,23 @@ const {
 
   :lang(hi) .intro {
     line-height: 1.6;
+  }
+
+  /* The title and intro arrive tipping forward; pages that share a title with the
+     link that led here let the view transition carry it instead. */
+  @media (prefers-reduced-motion: no-preference) {
+    .arrives .text > :global(*) {
+      transform-origin: 50% 100%;
+      animation: rise-in var(--dur-rise) var(--ease-out) both;
+    }
+
+    .arrives .text > :global(:nth-child(2)) {
+      animation-delay: var(--stagger-hero);
+    }
+
+    .arrives .text > :global(:nth-child(n + 3)) {
+      animation-delay: calc(2 * var(--stagger-hero));
+    }
   }
 
   @media (width >= 48rem) {

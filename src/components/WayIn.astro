@@ -201,12 +201,18 @@ const name = `way-in-${locale}`;
       right: 0;
       width: calc(50% - 1.5rem);
       opacity: 0;
-      transition: opacity var(--dur-base) var(--ease-out);
+      transform: perspective(var(--perspective)) translateX(6%) rotateY(-28deg) scale(0.94);
+      transform-origin: 0 50%;
+      transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-door) var(--ease-out);
       pointer-events: none;
     }
 
+    /* Choosing a stop swings its photograph open in the arch, like a door. */
     .stop:has(input:checked) :global(.stage) {
       opacity: 1;
+      transform: none;
     }
 
     /* Reserves the arch's height in the second column. */
@@ -260,6 +266,7 @@ const name = `way-in-${locale}`;
   @media (prefers-reduced-motion: reduce) {
     label::before,
     .stop :global(.stage) {
+      transform: none;
       transition-duration: var(--dur-quick);
     }
   }
