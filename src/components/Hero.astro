@@ -1,0 +1,205 @@
+---
+import { getImage } from 'astro:assets';
+import entrance from '../assets/photos/entrance.jpg';
+import entranceTall from '../assets/photos/entrance-tall.jpg';
+import { site } from '../data/site';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
+import OpeningStatus from './OpeningStatus.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = strings(locale);
+
+/** Phones get a 4:5 crop centred on the sign; wider screens get the whole entrance. */
+const crops = [
+  { src: entranceTall, widths: [480, 720, 864], media: '(max-width: 47.99rem)' },
+  { src: entrance, widths: [960, 1280, 1600, 1920], media: undefined },
+];
+const formats = ['avif', 'webp'] as const;
+
+const sources = await Promise.all(
+  crops.flatMap((crop) =>
+    formats.map(async (format) => {
+      const images = await Promise.all(
+        crop.widths.map((width) => getImage({ src: crop.src, width, format })),
+      );
+      return {
+        media: crop.media,
+        type: `image/${format}`,
+        srcset: images.map((image, index) => `${image.src} ${crop.widths[index]}w`).join(', '),
+      };
+    }),
+  ),
+);
+const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
+---
+
+<section class="hero" data-hero aria-labelledby="hero-title">
+  <picture class="photo">
+    {sources.map((source) => (
+      <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
+    ))}
+    <img
+      src={fallback.src}
+      alt={t.wayIn.stops[4]?.alt ?? ''}
+      width={entrance.width}
+      height={entrance.height}
+      fetchpriority="high"
+      loading="eager"
+    />
+  </picture>
+  <div class="text wrap">
+    <h1 id="hero-title" lang="en" style="--i: 0">
+      {site.name}
+    </h1>
+    <p class="line" style="--i: 1">
+      {t.home.line}
+    </p>
+    <div class="actions">
+      <OpeningStatus locale={locale} />
+      <div class="buttons">
+        <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
+        <Button href={localePath(locale, '/whats-on/')} variant="secondary" tone="dark">
+          {t.common.whatsOn}
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '../scripts/header';
+</script>
+
+<style>
+  .hero {
+    --focus: var(--color-paper);
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-height: max(36rem, 100svh);
+    margin-top: calc(-1 * (var(--header-height) + env(safe-area-inset-top)));
+    overflow: hidden;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .photo,
+  .photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .photo img {
+    object-fit: cover;
+    object-position: 50% 40%;
+  }
+
+  /* The one neutral scrim: under the header at the top, under the text at the foot. */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, var(--scrim) 0, transparent calc(var(--header-height) * 2.25)),
+      linear-gradient(to top, var(--scrim) 0, var(--scrim) 22%, transparent 64%);
+    pointer-events: none;
+  }
+
+  .text {
+    position: relative;
+    z-index: 1;
+    padding-block: 6rem max(2.5rem, env(safe-area-inset-bottom));
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--text-48);
+    letter-spacing: -0.02em;
+  }
+
+  .line {
+    max-width: 34ch;
+    margin: 1rem 0 0;
+    font-size: var(--text-21);
+    line-height: var(--line-snug);
+  }
+
+  /* Devanagari has no metric-matched fallback; the fallback wraps to a third line, so reserve it. */
+  .line:lang(hi) {
+    min-height: 3lh;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: 2rem;
+  }
+
+  /* On phones the status keeps a line of its own, so its live text can't re-wrap the buttons. */
+  .actions :global(.status) {
+    flex-basis: 100%;
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (width >= 48rem) {
+    .hero {
+      min-height: max(36rem, min(100svh, 56.25vw));
+    }
+
+    .photo img {
+      object-position: center;
+    }
+
+    .actions :global(.status) {
+      flex-basis: auto;
+    }
+
+    h1 {
+      font-size: var(--text-72);
+    }
+  }
+
+  /* Two lines on wide screens, so the name stays left of the sign in the photograph. */
+  @media (width >= 64rem) {
+    h1 {
+      max-width: 8ch;
+    }
+  }
+
+  @keyframes settle {
+    from {
+      transform: scale(var(--hero-scale));
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--rise));
+    }
+  }
+
+  :global([data-intro]) .photo img {
+    animation: settle var(--dur-hero) var(--ease-out) both;
+  }
+
+  :global([data-intro]) :is(h1, .line) {
+    animation: rise var(--dur-rise) var(--ease-out) both;
+    animation-delay: calc(var(--intro-delay) + var(--i) * var(--stagger-hero));
+  }
+</style>

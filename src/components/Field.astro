@@ -1,0 +1,137 @@
+---
+/*
+ * A labelled form field with a slot for its inline error.
+ * Fields carry no `name` in the preview, so a submitted form can't send their values anywhere.
+ * Give each field a `name` when real form handling is added.
+ */
+interface Props {
+  id: string;
+  label: string;
+  /** Used in error messages, for example "Enter your email address." */
+  fieldName: string;
+  type?: 'text' | 'email' | 'tel' | 'date' | 'number' | 'textarea' | 'select';
+  required?: boolean;
+  optionalLabel?: string | undefined;
+  hint?: string | undefined;
+  autocomplete?: string | undefined;
+  min?: string | number | undefined;
+  max?: string | number | undefined;
+  minlength?: number | undefined;
+  pattern?: string | undefined;
+  options?: { value: string; label: string }[];
+  placeholderOption?: string | undefined;
+}
+
+const {
+  id,
+  label,
+  fieldName,
+  type = 'text',
+  required = false,
+  optionalLabel,
+  hint,
+  autocomplete,
+  min,
+  max,
+  minlength,
+  pattern,
+  options = [],
+  placeholderOption,
+} = Astro.props;
+
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const shared = {
+  id,
+  required,
+  autocomplete,
+  'aria-describedby': hintId,
+  'data-field-name': fieldName,
+  'data-error-id': errorId,
+};
+---
+
+<div class="field">
+  <label for={id}>
+    {label}
+    {!required && optionalLabel && <span class="optional">({optionalLabel})</span>}
+  </label>
+  {hint && (
+    <p class="hint" id={hintId}>
+      {hint}
+    </p>
+  )}
+  <p class="error" id={errorId} hidden></p>
+  {type === 'textarea' ? (
+    <textarea {...shared} rows="5" minlength={minlength} />
+  ) : type === 'select' ? (
+    <select {...shared}>
+      <option value="">{placeholderOption}</option>
+      {options.map((option) => (
+        <option value={option.value}>{option.label}</option>
+      ))}
+    </select>
+  ) : (
+    <input
+      {...shared}
+      type={type}
+      min={min}
+      max={max}
+      minlength={minlength}
+      pattern={pattern}
+      inputmode={type === 'tel' ? 'tel' : undefined}
+    />
+  )}
+</div>
+
+<style>
+  .field {
+    display: grid;
+    gap: 0.375rem;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  .optional {
+    margin-inline-start: 0.25em;
+    font-weight: 400;
+  }
+
+  .hint {
+    margin: 0;
+    font-size: var(--text-16);
+    color: var(--color-slate);
+  }
+
+  .error {
+    margin: 0;
+    font-size: var(--text-16);
+    font-weight: 600;
+    color: var(--color-red);
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    min-height: var(--tap);
+    padding: 0.625rem 0.75rem;
+    border: var(--rule) solid var(--color-slate);
+    border-radius: var(--radius-control);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: var(--text-18);
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  :is(input, textarea, select)[aria-invalid='true'] {
+    border-color: var(--color-red);
+    border-width: 2px;
+  }
+</style>

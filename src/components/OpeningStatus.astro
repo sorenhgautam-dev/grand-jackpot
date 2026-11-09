@@ -1,0 +1,56 @@
+---
+import { site } from '../data/site';
+import { localePath, strings, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  class?: string;
+}
+
+const { locale, class: className } = Astro.props;
+const t = strings(locale);
+const config = JSON.stringify({
+  locale,
+  hours: site.hours,
+  timeZone: site.timezone,
+  strings: t.status,
+});
+---
+
+<p class:list={['status', className]} data-open-status data-config={config}>
+  <span class="dot" aria-hidden="true"></span>
+  <a data-fallback href={`${localePath(locale, '/visit/')}#hours`}>
+    {t.status.fallback}
+  </a>
+  <span data-live hidden></span>
+</p>
+
+<script>
+  import '../scripts/open-status';
+</script>
+
+<style>
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-inline-size: 13em;
+    min-height: var(--tap);
+    margin: 0;
+    font-size: var(--text-16);
+    line-height: var(--line-snug);
+    white-space: nowrap;
+  }
+
+  .dot {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-pill);
+    border: var(--rule) solid currentColor;
+  }
+
+  .status[data-state='open'] .dot {
+    background: currentColor;
+  }
+</style>

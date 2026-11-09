@@ -1,0 +1,142 @@
+---
+import hotel from '../../assets/photos/hotel.jpg';
+import Faq from '../../components/Faq.astro';
+import HoursTable from '../../components/HoursTable.astro';
+import OpeningStatus from '../../components/OpeningStatus.astro';
+import WayIn from '../../components/WayIn.astro';
+import { directionsUrl, site } from '../../data/site';
+import Page from '../../layouts/Page.astro';
+import { dataFor } from '../../lib/content';
+import { langParams, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const faqs = await dataFor('faqs', locale);
+---
+
+<Page
+  locale={locale}
+  path="/visit/"
+  title={t.visit.title}
+  description={t.visit.description}
+  intro={t.visit.intro}
+  photo={hotel}
+  photoAlt={t.wayIn.stops[0]?.alt}
+>
+  <div class="wrap facts">
+    <section id="hours" aria-labelledby="hours-title">
+      <h2 id="hours-title">{t.visit.hours}</h2>
+      <OpeningStatus locale={locale} />
+      <HoursTable locale={locale} />
+    </section>
+    <section aria-labelledby="entry">
+      <h2 id="entry">{t.visit.entry}</h2>
+      <ul>
+        {t.visit.entryItems.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </section>
+    <section aria-labelledby="getting-here">
+      <h2 id="getting-here">{t.visit.gettingHere}</h2>
+      <address>
+        {site.hotel}
+        <br />
+        {site.address.street}
+        <br />
+        {site.address.locality}, {site.address.country}
+      </address>
+      <a class="directions" href={directionsUrl} rel="noopener">
+        {t.common.directions}
+      </a>
+      <ul>
+        {t.visit.gettingHereItems.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </section>
+    <section aria-labelledby="on-site">
+      <h2 id="on-site">{t.visit.onSite}</h2>
+      <ul>
+        {t.visit.onSiteItems.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <WayIn locale={locale} heading={t.visit.wayIn} />
+
+  <section class="wrap questions" aria-labelledby="faq">
+    <h2 id="faq">{t.visit.faq}</h2>
+    <Faq items={faqs.items} />
+  </section>
+</Page>
+
+<style>
+  .facts {
+    display: grid;
+    gap: 2.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .facts section {
+    padding-top: 1rem;
+    border-top: var(--rule) solid var(--color-ink);
+  }
+
+  h2 {
+    margin: 0 0 1rem;
+    font-size: var(--text-24);
+  }
+
+  ul {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 0.5rem;
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  .directions {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: 600;
+  }
+
+  .questions {
+    padding-block: 2rem 6rem;
+  }
+
+  .questions h2 {
+    font-size: var(--text-36);
+  }
+
+  @media (width >= 48rem) {
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .facts {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .questions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 3rem;
+    }
+  }
+</style>

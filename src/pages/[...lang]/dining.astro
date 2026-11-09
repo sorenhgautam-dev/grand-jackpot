@@ -1,0 +1,98 @@
+---
+import dining from '../../assets/photos/dining.jpg';
+import floor from '../../assets/photos/floor.jpg';
+import mocktails from '../../assets/photos/mocktails.jpg';
+import players from '../../assets/photos/table-players.jpg';
+import Button from '../../components/Button.astro';
+import Gallery from '../../components/Gallery.astro';
+import Venue from '../../components/Venue.astro';
+import { site } from '../../data/site';
+import Page from '../../layouts/Page.astro';
+import { entries } from '../../lib/content';
+import { formatPhone } from '../../lib/format';
+import { langParams, localePath, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const venues = await entries('venues', locale);
+const dance = (await entries('events', locale)).find((event) => event.id.endsWith('/live-dance'));
+const poker = (await entries('games', locale)).find((game) => game.id.endsWith('/poker'));
+const phone = site.phones[0];
+const [bookBefore, bookAfter] = t.dining.book.split('{phone}');
+---
+
+<Page
+  locale={locale}
+  path="/dining/"
+  title={t.dining.title}
+  description={t.dining.description}
+  intro={t.dining.intro}
+  ogImage={dining}
+>
+  <section class="venues wrap" aria-label={t.dining.title}>
+    {venues.map((venue) => (
+      <Venue locale={locale} venue={venue} headingLevel="h2" full />
+    ))}
+  </section>
+
+  <section class="dance wrap" aria-labelledby="dance">
+    <h2 id="dance">{dance?.data.title}</h2>
+    <p>{dance?.data.summary}</p>
+    <Button href={localePath(locale, '/whats-on/live-dance/')} variant="secondary">
+      {t.common.whatsOn}
+    </Button>
+  </section>
+
+  <p class="book wrap">
+    {bookBefore}
+    <a href={`tel:${phone}`}>{formatPhone(phone)}</a>
+    {bookAfter}
+  </p>
+
+  <Gallery
+    locale={locale}
+    id="dining-gallery"
+    heading={t.dining.gallery}
+    photos={[
+      { src: floor, alt: t.wayIn.stops[6]?.alt ?? '' },
+      { src: mocktails, alt: t.dining.mocktailsAlt },
+      { src: players, alt: poker?.data.photoAlt ?? '' },
+    ]}
+  />
+</Page>
+
+<style>
+  .venues {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: 4rem;
+  }
+
+  .dance {
+    padding-block: 3rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  .dance h2 {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-36);
+  }
+
+  .dance p {
+    max-width: 48ch;
+    margin: 0 0 1.5rem;
+  }
+
+  .book {
+    margin-block: 0 2rem;
+  }
+
+  @media (width >= 48rem) {
+    .venues {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+</style>

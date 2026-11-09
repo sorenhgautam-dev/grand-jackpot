@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import entrance from '../../assets/photos/entrance.jpg';
+import facade from '../../assets/photos/facade-suits.jpg';
+import floor from '../../assets/photos/floor.jpg';
+import hotel from '../../assets/photos/hotel.jpg';
+import pool from '../../assets/photos/pool.jpg';
+import reception from '../../assets/photos/reception.jpg';
+import signpost from '../../assets/photos/signpost.jpg';
+import Gallery from '../../components/Gallery.astro';
+import Prose from '../../components/Prose.astro';
+import Page from '../../layouts/Page.astro';
+import { page } from '../../lib/content';
+import { langParams, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const entry = await page(locale, 'about');
+const { Content } = await render(entry);
+const alt = (index: number) => t.wayIn.stops[index]?.alt ?? '';
+---
+
+<Page
+  locale={locale}
+  path="/about/"
+  title={entry.data.title}
+  description={entry.data.description}
+  intro={entry.data.description}
+  photo={facade}
+  photoAlt={alt(3)}
+>
+  <div class="wrap body">
+    <Prose>
+      <Content />
+    </Prose>
+  </div>
+  <Gallery
+    locale={locale}
+    id="about-gallery"
+    heading={t.about.gallery}
+    photos={[
+      { src: entrance, alt: alt(4) },
+      { src: hotel, alt: alt(0) },
+      { src: signpost, alt: alt(1) },
+      { src: pool, alt: alt(2) },
+      { src: reception, alt: alt(5) },
+      { src: floor, alt: alt(6) },
+    ]}
+  />
+</Page>
+
+<style>
+  .body {
+    padding-bottom: 3rem;
+  }
+</style>

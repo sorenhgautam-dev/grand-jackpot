@@ -1,0 +1,189 @@
+---
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import { fill, strings, type Locale } from '../lib/i18n';
+import Icon from './Icon.astro';
+import Photo from './Photo.astro';
+
+interface Props {
+  locale: Locale;
+  heading: string;
+  photos: { src: ImageMetadata; alt: string }[];
+  id: string;
+}
+
+const { locale, heading, photos, id } = Astro.props;
+const t = strings(locale);
+const full = await Promise.all(
+  photos.map((photo) => getImage({ src: photo.src, width: 1600, format: 'webp' })),
+);
+---
+
+<section class="gallery wrap" aria-labelledby={`${id}-title`} data-gallery>
+  <h2 id={`${id}-title`}>{heading}</h2>
+  <ul style={`--columns: ${Math.min(photos.length, 4)}`}>
+    {photos.map((photo, index) => (
+      <li>
+        <a
+          href={full[index]?.src}
+          data-index={index}
+          data-alt={photo.alt}
+          data-width={full[index]?.attributes.width}
+          data-height={full[index]?.attributes.height}
+          aria-label={fill(t.a11y.openPhoto, { alt: photo.alt })}
+        >
+          <Photo src={photo.src} alt="" ratio="landscape" sizes="(min-width: 64rem) 25vw, 50vw" />
+        </a>
+      </li>
+    ))}
+  </ul>
+  <dialog class="lightbox" aria-label={heading} data-lightbox>
+    <div class="stage" data-stage>
+      <img alt="" data-image />
+    </div>
+    <div class="controls">
+      <p
+        class="count"
+        aria-live="polite"
+        data-count
+        data-template={t.a11y.photoOf}
+        data-total={photos.length}
+      ></p>
+      <button type="button" data-step="-1" aria-label={t.a11y.previous}>
+        <Icon name="previous" />
+      </button>
+      <button type="button" data-step="1" aria-label={t.a11y.next}>
+        <Icon name="next" />
+      </button>
+      <button type="button" data-close aria-label={t.a11y.closePhoto}>
+        <Icon name="close" />
+      </button>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  import '../scripts/lightbox';
+</script>
+
+<style>
+  .gallery {
+    padding-block: 3rem 5rem;
+  }
+
+  h2 {
+    margin: 0 0 1.5rem;
+    font-size: var(--text-36);
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: block;
+    border-radius: var(--radius-control);
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  a:active {
+    transform: scale(var(--press-scale));
+  }
+
+  @media (width >= 64rem) {
+    ul {
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+  }
+
+  .lightbox {
+    --focus: var(--color-paper);
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-paper);
+    overflow: hidden;
+  }
+
+  .lightbox::backdrop {
+    background: var(--color-ink);
+    opacity: 0;
+    transition-property: opacity, overlay, display;
+    transition-duration: var(--dur-dialog-exit);
+    transition-behavior: allow-discrete;
+  }
+
+  .lightbox[open]::backdrop {
+    opacity: 1;
+    transition-duration: var(--dur-dialog);
+  }
+
+  @starting-style {
+    .lightbox[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .stage {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem 5.5rem;
+    touch-action: pan-y;
+  }
+
+  .stage img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    transform-origin: 0 0;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .controls {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+
+  .count {
+    flex: 1;
+    margin: 0;
+    font-size: var(--text-16);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .controls button {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    border: var(--rule) solid currentColor;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .controls button:active {
+    transform: scale(var(--press-scale));
+  }
+</style>

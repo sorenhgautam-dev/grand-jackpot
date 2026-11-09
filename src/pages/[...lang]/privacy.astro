@@ -1,0 +1,32 @@
+---
+import { render } from 'astro:content';
+import Prose from '../../components/Prose.astro';
+import Page from '../../layouts/Page.astro';
+import { page } from '../../lib/content';
+import { langParams, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const entry = await page(locale, 'privacy');
+const { Content } = await render(entry);
+---
+
+<Page
+  locale={locale}
+  path="/privacy/"
+  title={entry.data.title}
+  description={entry.data.description}
+>
+  <div class="wrap body">
+    <Prose>
+      <Content />
+    </Prose>
+  </div>
+</Page>
+
+<style>
+  .body {
+    padding-bottom: 5rem;
+  }
+</style>

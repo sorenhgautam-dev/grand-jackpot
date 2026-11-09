@@ -1,0 +1,201 @@
+---
+import { primaryNav, secondaryNav } from '../data/nav';
+import { directionsUrl, site } from '../data/site';
+import { formatIntervals, formatPhone } from '../lib/format';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import LanguageSwitch from './LanguageSwitch.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+const t = strings(locale);
+
+const dayTexts = site.hours.map((day) => formatIntervals(day, locale, t.hours));
+const sameEveryDay = dayTexts.every((text) => text === dayTexts[0]);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" data-surface="dark">
+  <div class="wrap grid">
+    <div class="place">
+      <p class="name" lang="en">
+        {site.name}
+      </p>
+      <address>
+        {site.hotel}
+        <br />
+        {site.address.street}
+        <br />
+        {site.address.locality}, {site.address.country}
+      </address>
+      <a href={directionsUrl} rel="noopener">
+        {t.common.directions}
+      </a>
+    </div>
+
+    <div class="contact">
+      <p>
+        <span class="label">{t.footer.hoursToday}</span>
+        {sameEveryDay ? (
+          <span>{dayTexts[0]}</span>
+        ) : (
+          <a href={`${localePath(locale, '/visit/')}#hours`}>{t.status.fallback}</a>
+        )}
+      </p>
+      <p>
+        <span class="label">{t.footer.call}</span>
+        {site.phones.map((phone) => (
+          <a class="phone" href={`tel:${phone}`}>
+            {formatPhone(phone)}
+          </a>
+        ))}
+      </p>
+    </div>
+
+    <nav class="links" aria-label={t.a11y.footerNav}>
+      <ul>
+        {[...primaryNav, ...secondaryNav].map((item) => (
+          <li>
+            <a href={localePath(locale, item.path)}>{t.nav[item.key]}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="play">
+      <p>{t.footer.entry}</p>
+      <p>
+        {t.footer.play}
+        <a href={localePath(locale, '/responsible-gaming/')}>{t.footer.playLink}</a>
+      </p>
+    </div>
+
+    <div class="base">
+      <p>
+        © {year} <span lang="en">{site.name}</span>
+      </p>
+      <LanguageSwitch locale={locale} path={path} />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 4rem max(2rem, env(safe-area-inset-bottom));
+    font-size: var(--text-16);
+  }
+
+  .grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--text-24);
+    font-weight: 600;
+    line-height: var(--line-tight);
+    margin-bottom: 0.75rem;
+  }
+
+  address {
+    font-style: normal;
+    margin-bottom: 0.5rem;
+  }
+
+  .place > a,
+  .phone,
+  .links a,
+  .play a,
+  .contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+
+  .contact {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .contact p {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .label {
+    font-size: var(--text-14);
+    font-weight: 600;
+  }
+
+  .phone {
+    min-height: 2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .links ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .links a {
+    text-decoration: none;
+  }
+
+  .play {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    max-width: 32ch;
+  }
+
+  .play a {
+    min-height: auto;
+    margin-inline-start: 0.25em;
+  }
+
+  .base {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: var(--rule) solid var(--hairline-dark);
+    font-size: var(--text-14);
+  }
+
+  @media (hover: hover) {
+    .links a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .base {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .grid {
+      grid-template-columns: 1.2fr 1fr 1.4fr 1.2fr;
+    }
+  }
+</style>

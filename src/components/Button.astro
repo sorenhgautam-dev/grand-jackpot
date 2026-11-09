@@ -1,0 +1,117 @@
+---
+interface Props {
+  variant?: 'primary' | 'secondary' | 'quiet' | undefined;
+  /** The surface the button sits on. */
+  tone?: 'light' | 'dark' | undefined;
+  href?: string | undefined;
+  type?: 'button' | 'submit' | undefined;
+  rel?: string | undefined;
+  class?: string | undefined;
+  [data: `data-${string}`]: string | undefined;
+}
+
+const {
+  variant = 'primary',
+  tone = 'light',
+  href,
+  type = 'button',
+  rel,
+  class: className,
+  ...data
+} = Astro.props;
+---
+
+{href ? (
+  <a
+    href={href}
+    rel={rel}
+    class:list={['button', className]}
+    data-variant={variant}
+    data-tone={tone}
+    {...data}
+  >
+    <slot />
+  </a>
+) : (
+  <button
+    type={type}
+    class:list={['button', className]}
+    data-variant={variant}
+    data-tone={tone}
+    {...data}
+  >
+    <slot />
+  </button>
+)}
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--tap);
+    padding: 0.5rem 1.25rem;
+    border: var(--rule) solid transparent;
+    border-radius: var(--radius-control);
+    font: inherit;
+    font-size: var(--text-16);
+    font-weight: 600;
+    line-height: var(--line-snug);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      transform var(--dur-press) var(--ease-out),
+      background-color var(--dur-quick) var(--ease-out),
+      color var(--dur-quick) var(--ease-out);
+  }
+
+  .button:active {
+    transform: scale(var(--press-scale));
+  }
+
+  [data-variant='primary'] {
+    background: var(--color-red);
+    color: var(--color-paper);
+  }
+
+  [data-variant='secondary'] {
+    border-color: currentColor;
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  [data-variant='secondary'][data-tone='dark'] {
+    color: var(--color-paper);
+  }
+
+  [data-variant='quiet'] {
+    padding-inline: 0;
+    background: transparent;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  @media (hover: hover) {
+    [data-variant='primary']:hover {
+      background: var(--red-deep);
+    }
+
+    [data-variant='secondary'][data-tone='light']:hover {
+      background: var(--color-ink);
+      color: var(--color-paper);
+    }
+
+    [data-variant='secondary'][data-tone='dark']:hover {
+      background: var(--color-paper);
+      color: var(--color-ink);
+    }
+
+    [data-variant='quiet']:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+</style>

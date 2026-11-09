@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { strings, type Locale } from '../lib/i18n';
+import Photo from './Photo.astro';
+
+interface Props {
+  locale: Locale;
+  venue: CollectionEntry<'venues'>;
+  headingLevel?: 'h2' | 'h3';
+  /** Include the longer description from the entry's body. */
+  full?: boolean;
+}
+
+const { locale, venue, headingLevel: Heading = 'h3', full = false } = Astro.props;
+const t = strings(locale);
+---
+
+<article class="venue">
+  <Photo
+    src={venue.data.photo}
+    alt={venue.data.photoAlt}
+    ratio="landscape"
+    sizes="(min-width: 48rem) 50vw, 100vw"
+  />
+  <Heading>{venue.data.title}</Heading>
+  <p class="served">
+    <span class="visually-hidden">{t.dining.served}: </span>
+    {venue.data.served}
+  </p>
+  <p>{venue.data.summary}</p>
+  {full && <p>{venue.body}</p>}
+</article>
+
+<style>
+  .venue :is(h2, h3) {
+    margin: 1.25rem 0 0.25rem;
+    font-size: var(--text-24);
+  }
+
+  p {
+    max-width: 44ch;
+    margin: 0.5rem 0 0;
+  }
+
+  .served {
+    margin-top: 0;
+    font-weight: 600;
+  }
+</style>

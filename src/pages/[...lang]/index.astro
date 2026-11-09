@@ -1,0 +1,290 @@
+---
+import { getImage } from 'astro:assets';
+import entrance from '../../assets/photos/entrance.jpg';
+import floor from '../../assets/photos/floor.jpg';
+import Button from '../../components/Button.astro';
+import EventList from '../../components/EventList.astro';
+import Hero from '../../components/Hero.astro';
+import HoursTable from '../../components/HoursTable.astro';
+import Photo from '../../components/Photo.astro';
+import Venue from '../../components/Venue.astro';
+import WayIn from '../../components/WayIn.astro';
+import { directionsUrl, site } from '../../data/site';
+import Base from '../../layouts/Base.astro';
+import { entries, slugOf } from '../../lib/content';
+import { langParams, localePath, strings, type Locale } from '../../lib/i18n';
+import { casinoJsonLd } from '../../lib/schema';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const [events, games, venues] = await Promise.all([
+  entries('events', locale),
+  entries('games', locale),
+  entries('venues', locale),
+]);
+const og = await getImage({ src: entrance, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.src, Astro.site));
+---
+
+<Base
+  locale={locale}
+  path="/"
+  title={t.home.title}
+  description={t.meta.siteDescription}
+  home
+  jsonLd={jsonLd}
+>
+  <Hero locale={locale} />
+
+  <section class="tonight wrap section" aria-labelledby="tonight">
+    <div class="aside">
+      <h2 id="tonight">{t.home.tonight}</h2>
+      <Button href={localePath(locale, '/whats-on/')} variant="quiet">
+        {t.common.seeAllEvents}
+      </Button>
+    </div>
+    <EventList locale={locale} events={events} days={2} limit={3} />
+  </section>
+
+  <section class="gaming wrap section" aria-labelledby="gaming">
+    <Photo
+      src={floor}
+      alt={t.wayIn.stops[6]?.alt ?? ''}
+      ratio="wide"
+      sizes="(min-width: 64rem) 55vw, 100vw"
+      class="gaming-photo"
+    />
+    <div class="gaming-text">
+      <h2 id="gaming">{t.home.gaming}</h2>
+      <p>{t.home.gamingText}</p>
+      <ul class="game-names">
+        {games.map((game) => (
+          <li>
+            <a href={localePath(locale, `/gaming/${slugOf(game.id)}/`)}>{game.data.title}</a>
+          </li>
+        ))}
+      </ul>
+      <Button href={localePath(locale, '/gaming/')} variant="secondary">
+        {t.home.gamingLink}
+      </Button>
+    </div>
+  </section>
+
+  <section class="dining wrap section" aria-labelledby="dining">
+    <div class="aside">
+      <h2 id="dining">{t.home.dining}</h2>
+      <Button href={localePath(locale, '/dining/')} variant="quiet">
+        {t.home.diningLink}
+      </Button>
+    </div>
+    <div class="venues">
+      {venues.map((venue) => (
+        <Venue locale={locale} venue={venue} />
+      ))}
+    </div>
+  </section>
+
+  <section class="packages" data-surface="dark" aria-labelledby="packages">
+    <div class="wrap packages-inner">
+      <h2 id="packages">{t.home.packages}</h2>
+      <p>{t.home.packagesText}</p>
+      <Button href={localePath(locale, '/packages/')} variant="secondary" tone="dark">
+        {t.common.seePackages}
+      </Button>
+    </div>
+  </section>
+
+  <WayIn locale={locale} heading={t.home.wayIn} />
+
+  <section class="before wrap section" aria-labelledby="before">
+    <h2 id="before">{t.home.beforeYouGo}</h2>
+    <dl class="reference">
+      <div>
+        <dt>{t.home.hoursLabel}</dt>
+        <dd>
+          <HoursTable locale={locale} />
+        </dd>
+      </div>
+      <div>
+        <dt>{t.home.entryLabel}</dt>
+        <dd>{t.home.entryValue}</dd>
+      </div>
+      <div>
+        <dt>{t.home.gettingHereLabel}</dt>
+        <dd>{t.home.gettingHereValue}</dd>
+      </div>
+      <div>
+        <dt>{t.home.addressLabel}</dt>
+        <dd>
+          <address>
+            {site.hotel}, {site.address.street}, {site.address.locality}
+          </address>
+          <a class="directions" href={directionsUrl} rel="noopener">
+            {t.common.directions}
+          </a>
+        </dd>
+      </div>
+    </dl>
+  </section>
+</Base>
+
+<style>
+  .section {
+    padding-block: 4rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  .tonight {
+    border-top: 0;
+  }
+
+  .section h2,
+  .packages h2 {
+    margin: 0 0 1rem;
+    font-size: var(--text-36);
+  }
+
+  .aside {
+    margin-bottom: 1.5rem;
+  }
+
+  .gaming {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .gaming-text p {
+    max-width: 44ch;
+    margin: 0;
+  }
+
+  .game-names {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    margin: 1.5rem 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .game-names a {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    border-bottom: var(--rule) solid var(--hairline);
+    font-family: var(--font-display);
+    font-size: var(--text-21);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .venues {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .packages {
+    padding-block: 4rem;
+  }
+
+  .packages-inner p {
+    max-width: 52ch;
+    margin: 0 0 2rem;
+    font-size: var(--text-21);
+    line-height: var(--line-snug);
+  }
+
+  .reference {
+    display: grid;
+    gap: 0;
+    margin: 0;
+  }
+
+  .reference > div {
+    display: grid;
+    gap: 0.25rem;
+    padding-block: 1rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    max-width: 52ch;
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  .directions {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: 600;
+  }
+
+  @media (hover: hover) {
+    .game-names a:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .venues {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+
+    .reference > div {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .section {
+      padding-block: 6rem;
+    }
+
+    .tonight,
+    .dining,
+    .before {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 3rem;
+    }
+
+    .gaming {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .packages {
+      padding-block: 6rem;
+    }
+
+    .packages-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 0 3rem;
+    }
+
+    .packages-inner p {
+      margin-top: 0.5rem;
+    }
+
+    .packages-inner :global(.button) {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+</style>

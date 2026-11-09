@@ -1,0 +1,59 @@
+---
+import { render } from 'astro:content';
+import Prose from '../../components/Prose.astro';
+import { site } from '../../data/site';
+import Page from '../../layouts/Page.astro';
+import { page } from '../../lib/content';
+import { formatPhone } from '../../lib/format';
+import { langParams, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const entry = await page(locale, 'responsible-gaming');
+const { Content } = await render(entry);
+---
+
+<Page
+  locale={locale}
+  path="/responsible-gaming/"
+  title={entry.data.title}
+  description={entry.data.description}
+  intro={t.footer.play}
+>
+  <div class="wrap body">
+    <Prose>
+      <Content />
+    </Prose>
+    <p class="call">
+      {t.footer.call}
+      {site.phones.map((phone) => (
+        <a href={`tel:${phone}`}>{formatPhone(phone)}</a>
+      ))}
+    </p>
+  </div>
+</Page>
+
+<style>
+  .body {
+    padding-bottom: 5rem;
+  }
+
+  .call {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1.25rem;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .call a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

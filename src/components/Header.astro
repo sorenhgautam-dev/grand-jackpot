@@ -1,0 +1,181 @@
+---
+import { primaryNav } from '../data/nav';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+import Logo from './Logo.astro';
+import MenuDialog from './MenuDialog.astro';
+import OpeningStatus from './OpeningStatus.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  /** Where the language switch points: this page in the other language. */
+  languagePath: string;
+  /** Clear over the home hero until it scrolls away. */
+  overHero?: boolean;
+}
+
+const { locale, path, languagePath, overHero = false } = Astro.props;
+const t = strings(locale);
+const isCurrent = (itemPath: string) => path.startsWith(itemPath);
+---
+
+<header class="header" data-header data-over-hero={overHero ? '' : undefined}>
+  <div class="bar wrap">
+    <Logo locale={locale} current={path === '/'} />
+    <nav class="primary" aria-label={t.a11y.mainNav}>
+      <ul>
+        {primaryNav.map((item) => (
+          <li>
+            <a
+              href={localePath(locale, item.path)}
+              aria-current={isCurrent(item.path) ? 'page' : undefined}
+            >
+              {t.nav[item.key]}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="aside">
+      <OpeningStatus locale={locale} class="header-status" />
+      <LanguageSwitch locale={locale} path={languagePath} />
+      <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
+    </div>
+    <button
+      class="menu-button"
+      commandfor="menu"
+      command="show-modal"
+      aria-haspopup="dialog"
+      aria-controls="menu"
+    >
+      <Icon name="menu" />
+      <span>{t.a11y.menu}</span>
+    </button>
+  </div>
+</header>
+<MenuDialog locale={locale} path={path} languagePath={languagePath} />
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding-top: env(safe-area-inset-top);
+    color: var(--color-ink);
+    transition: color var(--dur-quick) var(--ease-out);
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-bottom: var(--rule) solid var(--hairline);
+    background: var(--color-paper);
+    opacity: 1;
+    transition: opacity var(--dur-quick) var(--ease-out);
+  }
+
+  :global(.js) .header[data-over-hero]:not([data-solid]) {
+    --focus: var(--color-paper);
+    color: var(--color-paper);
+  }
+
+  :global(.js) .header[data-over-hero]:not([data-solid])::before {
+    opacity: 0;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: var(--header-height);
+  }
+
+  .primary,
+  .aside {
+    display: none;
+  }
+
+  .menu-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: var(--tap);
+    margin-inline-end: -0.5rem;
+    padding: 0 0.5rem;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--text-16);
+    cursor: pointer;
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .menu-button:active {
+    transform: scale(var(--press-scale));
+  }
+
+  @media (width >= 64rem) {
+    .menu-button {
+      display: none;
+    }
+
+    .primary,
+    .aside {
+      display: flex;
+      align-items: center;
+    }
+
+    .primary ul {
+      display: flex;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .primary a {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--tap);
+      font-size: var(--text-16);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .primary [aria-current='page'] {
+      text-decoration: underline;
+      text-decoration-color: var(--color-copper);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.35em;
+    }
+
+    .aside {
+      gap: 1.25rem;
+    }
+
+    .header :global(.logo .name) {
+      display: none;
+    }
+  }
+
+  @media (hover: hover) and (width >= 64rem) {
+    .primary a:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.35em;
+    }
+  }
+
+  @media (width >= 80rem) {
+    .header :global(.logo .name) {
+      display: inline;
+    }
+  }
+</style>

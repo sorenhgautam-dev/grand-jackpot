@@ -1,0 +1,58 @@
+---
+import { localePath, locales, strings, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  /** The current page's path without its language prefix. */
+  path: string;
+  class?: string;
+}
+
+const { locale, path, class: className } = Astro.props;
+const others = locales.filter((other) => other !== locale);
+---
+
+<ul class:list={['language', className]} aria-label={strings(locale).a11y.language}>
+  {others.map((other) => (
+    <li>
+      <a
+        href={localePath(other, path)}
+        hreflang={other}
+        lang={other}
+        aria-label={strings(locale).a11y.switchTo}
+        data-astro-prefetch="false"
+        data-script={other === 'hi' && locale !== 'hi' ? 'native' : undefined}
+      >
+        {strings(other).langName}
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .language {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    min-width: var(--tap);
+    font-size: var(--text-16);
+    text-decoration: none;
+  }
+
+  [data-script='native'] {
+    font-family: var(--font-native-label);
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { slugOf } from '../lib/content';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Photo from './Photo.astro';
+
+interface Props {
+  locale: Locale;
+  game: CollectionEntry<'games'>;
+}
+
+const { locale, game } = Astro.props;
+const t = strings(locale);
+const slug = slugOf(game.id);
+const href = localePath(locale, `/gaming/${slug}/`);
+---
+
+<li class:list={['game', { 'has-photo': game.data.photo }]}>
+  {game.data.photo && (
+    <Photo
+      src={game.data.photo}
+      alt={game.data.photoAlt ?? ''}
+      ratio="landscape"
+      sizes="(min-width: 48rem) 22rem, 100vw"
+      transitionName={`game-${slug}-photo`}
+    />
+  )}
+  <div class="words">
+    <h3 style={`view-transition-name: game-${slug}-title`}>
+      <a href={href}>{game.data.title}</a>
+    </h3>
+    <p>{game.data.summary}</p>
+    <span class="more" aria-hidden="true">
+      {t.common.howToPlay}
+    </span>
+  </div>
+</li>
+
+<style>
+  .game {
+    display: grid;
+    gap: 1rem;
+    padding-block: 1.5rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--text-24);
+  }
+
+  h3 a {
+    text-decoration: none;
+  }
+
+  /* The whole row answers a click; the heading link carries the name for assistive tech. */
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .game {
+    position: relative;
+  }
+
+  p {
+    max-width: var(--measure);
+    margin: 0.5rem 0 0.75rem;
+  }
+
+  .more {
+    font-size: var(--text-16);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  @media (hover: hover) {
+    .game:hover h3 a {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .game {
+      grid-template-columns: 22rem minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .game:not(.has-photo) .words {
+      grid-column: 2;
+    }
+  }
+</style>

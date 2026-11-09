@@ -1,0 +1,80 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import EventList from '../../../components/EventList.astro';
+import Prose from '../../../components/Prose.astro';
+import Page from '../../../layouts/Page.astro';
+import { entries, slugOf } from '../../../lib/content';
+import { formatList, formatTime } from '../../../lib/format';
+import { fill, langParams, localePath, strings, type Locale } from '../../../lib/i18n';
+
+export async function getStaticPaths() {
+  const paths = await Promise.all(
+    langParams().map(async ({ params, props }) =>
+      (await entries('events', props.locale)).map((event) => ({
+        params: { ...params, event: slugOf(event.id) },
+        props: { locale: props.locale, event },
+      })),
+    ),
+  );
+  return paths.flat();
+}
+
+const { locale, event } = Astro.props as { locale: Locale; event: CollectionEntry<'events'> };
+const t = strings(locale);
+const slug = slugOf(event.id);
+const { Content } = await render(event);
+const times = formatList(
+  event.data.times.map((time) => formatTime(time, locale)),
+  locale,
+);
+---
+
+<Page
+  locale={locale}
+  path={`/whats-on/${slug}/`}
+  title={event.data.title}
+  description={event.data.summary}
+  intro={fill(t.common.everyDayAt, { times })}
+  transitionKey={`event-${slug}`}
+>
+  <a slot="before-title" class="back" href={localePath(locale, '/whats-on/')}>
+    {t.common.backToEvents}
+  </a>
+  <div class="wrap body">
+    <Prose>
+      <Content />
+    </Prose>
+    <section aria-labelledby="next">
+      <h2 id="next">{t.events.next}</h2>
+      <EventList locale={locale} events={[event]} days={3} limit={4} shareTitles={false} />
+    </section>
+  </div>
+</Page>
+
+<style>
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-bottom: 1rem;
+    font-size: var(--text-16);
+  }
+
+  .body {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: 5rem;
+  }
+
+  h2 {
+    margin: 0 0 1rem;
+    font-size: var(--text-24);
+  }
+
+  @media (width >= 64rem) {
+    .body {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 4rem;
+    }
+  }
+</style>

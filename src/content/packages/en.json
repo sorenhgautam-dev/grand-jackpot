@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "id": "fun-2000",
+      "title": "Fun package",
+      "price": "INR 2,000",
+      "includes": [
+        "INR 3,000 free-play casino coupon",
+        "Buffet lunch or dinner at the casino",
+        "Complimentary drinks, with alcohol served at the gaming tables",
+        "Live entertainment",
+        "Pickup and drop, hotel to casino and back"
+      ]
+    },
+    {
+      "id": "fun-5000",
+      "title": "Fun package",
+      "price": "INR 5,000",
+      "includes": [
+        "INR 8,000 free-play casino coupon",
+        "Buffet lunch or dinner at the casino",
+        "Complimentary drinks, with alcohol served at the gaming tables",
+        "Live entertainment",
+        "Pickup and drop anywhere inside the Ring Road"
+      ]
+    },
+    {
+      "id": "vip",
+      "title": "VIP package",
+      "includes": [
+        "A room for your stay",
+        "Airport pickup and drop",
+        "Welcome drink",
+        "Casino benefits for VIP guests",
+        "Fine dining"
+      ]
+    }
+  ],
+  "terms": "Terms and conditions apply. Ask us for the details when you book."
+}

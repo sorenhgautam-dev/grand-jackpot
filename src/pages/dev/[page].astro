@@ -1,0 +1,271 @@
+---
+/*
+ * /dev/ui: every token and component on one page, for screenshot review.
+ * Built only in development; production builds have no paths here.
+ */
+import floor from '../../assets/photos/floor.jpg';
+import signpost from '../../assets/photos/signpost.jpg';
+import Button from '../../components/Button.astro';
+import EventList from '../../components/EventList.astro';
+import Faq from '../../components/Faq.astro';
+import Field from '../../components/Field.astro';
+import Gallery from '../../components/Gallery.astro';
+import GameRow from '../../components/GameRow.astro';
+import HoursTable from '../../components/HoursTable.astro';
+import OpeningStatus from '../../components/OpeningStatus.astro';
+import Photo from '../../components/Photo.astro';
+import PreviewForm from '../../components/PreviewForm.astro';
+import Venue from '../../components/Venue.astro';
+import WayIn from '../../components/WayIn.astro';
+import Base from '../../layouts/Base.astro';
+import { dataFor, entries } from '../../lib/content';
+import { strings } from '../../lib/i18n';
+import tokens from '../../styles/tokens.css?raw';
+
+export function getStaticPaths() {
+  return import.meta.env.PROD ? [] : [{ params: { page: 'ui' } }];
+}
+
+const t = strings('en');
+const colors = [...tokens.matchAll(/--color-([a-z]+):\s*(#[0-9a-f]{6})/g)].map(([, name, hex]) => ({
+  name,
+  hex,
+}));
+const sizes = [...tokens.matchAll(/--text-(\d+):/g)].map(([, size]) => size);
+const motion = [...tokens.matchAll(/--((?:dur|ease|stagger)-[a-z-]+):\s*([^;]+);/g)].map(
+  ([, name, value]) => ({ name, value }),
+);
+const [events, games, venues, faqs] = await Promise.all([
+  entries('events', 'en'),
+  entries('games', 'en'),
+  entries('venues', 'en'),
+  dataFor('faqs', 'en'),
+]);
+---
+
+<Base
+  locale="en"
+  path="/dev/ui/"
+  title="Interface review"
+  description="Tokens and components."
+  indexable={false}
+>
+  <div class="wrap ui">
+    <h1>Interface review</h1>
+
+    <section>
+      <h2>Colour</h2>
+      <ul class="swatches">
+        {colors.map(({ name, hex }) => (
+          <li>
+            <span class="swatch" style={`background: var(--color-${name})`}></span>
+            {name} <code>{hex}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h2>Type</h2>
+      {sizes.map((size) => (
+        <p class="specimen" style={`font-size: var(--text-${size})`}>
+          {size} Grand Jackpot Casino, ग्रैंड होटल
+        </p>
+      ))}
+      <p class="body-specimen">
+        Body: Live tables and slots share one floor. Dealers run the games, and you can ask them how
+        a table works before you sit down.
+      </p>
+    </section>
+
+    <section>
+      <h2>Motion</h2>
+      <dl class="motion">
+        {motion.map(({ name, value }) => (
+          <div>
+            <dt>{name}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <section>
+      <h2>Buttons</h2>
+      <div class="row">
+        <Button>Plan your visit</Button>
+        <Button variant="secondary">See all events</Button>
+        <Button variant="quiet">Clear filters</Button>
+      </div>
+      <div class="row" data-surface="dark">
+        <Button>Plan your visit</Button>
+        <Button variant="secondary" tone="dark">
+          What’s on
+        </Button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Opening status and hours</h2>
+      <OpeningStatus locale="en" />
+      <HoursTable locale="en" />
+    </section>
+
+    <section>
+      <h2>Event list</h2>
+      <EventList locale="en" events={events} days={2} />
+    </section>
+
+    <section>
+      <h2>Game rows</h2>
+      <ul class="plain">
+        {games.slice(0, 2).map((game) => (
+          <GameRow locale="en" game={game} />
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h2>Venues</h2>
+      <div class="two">
+        {venues.map((venue) => (
+          <Venue locale="en" venue={venue} />
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Photographs</h2>
+      <div class="three">
+        <Photo src={floor} alt="Wide" ratio="wide" sizes="33vw" />
+        <Photo src={floor} alt="Landscape" ratio="landscape" sizes="33vw" />
+        <Photo src={signpost} alt="Portrait arch" ratio="portrait" arch sizes="33vw" />
+      </div>
+    </section>
+
+    <section>
+      <h2>Questions</h2>
+      <Faq items={faqs.items.slice(0, 3)} />
+    </section>
+
+    <section>
+      <h2>Form</h2>
+      <PreviewForm
+        locale="en"
+        id="ui-form"
+        submitLabel={t.form.send}
+        nameField="ui-name"
+        emailField="ui-email"
+      >
+        <Field id="ui-name" label={t.form.name} fieldName={t.form.fieldNames.name} required />
+        <Field
+          id="ui-email"
+          type="email"
+          label={t.form.email}
+          fieldName={t.form.fieldNames.email}
+          required
+        />
+        <Field
+          id="ui-phone"
+          type="tel"
+          label={t.form.phone}
+          fieldName={t.form.fieldNames.phone}
+          hint={t.form.phoneHint}
+          optionalLabel={t.form.optional}
+        />
+      </PreviewForm>
+    </section>
+  </div>
+
+  <WayIn locale="en" heading="The way in" />
+  <Gallery
+    locale="en"
+    id="ui-gallery"
+    heading="Gallery"
+    photos={[
+      { src: floor, alt: 'The gaming floor' },
+      { src: signpost, alt: 'The sign' },
+    ]}
+  />
+</Base>
+
+<style>
+  .ui {
+    padding-block: 3rem;
+  }
+
+  section {
+    padding-block: 2rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  h2 {
+    margin: 0 0 1rem;
+    font-size: var(--text-24);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .swatch {
+    display: block;
+    width: 6rem;
+    height: 4rem;
+    margin-bottom: 0.5rem;
+    border: var(--rule) solid var(--hairline);
+  }
+
+  .specimen {
+    margin: 0.25rem 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: var(--line-tight);
+  }
+
+  .body-specimen {
+    max-width: var(--measure);
+  }
+
+  .motion div {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .motion dd {
+    margin: 0;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .plain {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .two,
+  .three {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (width >= 48rem) {
+    .two {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

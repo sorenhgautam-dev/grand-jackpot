@@ -1,0 +1,217 @@
+---
+import drinks from '../../assets/photos/drinks.jpg';
+import Field from '../../components/Field.astro';
+import PreviewForm from '../../components/PreviewForm.astro';
+import Page from '../../layouts/Page.astro';
+import { dataFor } from '../../lib/content';
+import { langParams, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const { items, terms } = await dataFor('packages', locale);
+const label = (item: (typeof items)[number]) =>
+  item.price ? `${item.title}, ${item.price}` : item.title;
+---
+
+<Page
+  locale={locale}
+  path="/packages/"
+  title={t.packages.title}
+  description={t.packages.description}
+  intro={t.packages.intro}
+  ogImage={drinks}
+>
+  <div class="wrap content">
+    <ul class="offers">
+      {items.map((item) => (
+        <li class="offer">
+          <h2>{item.title}</h2>
+          <p class="price">
+            {item.price ? (
+              <>
+                <span class="amount">{item.price}</span> {t.packages.perPerson}
+              </>
+            ) : (
+              <span class="amount">{t.packages.onRequest}</span>
+            )}
+          </p>
+          <ul class="includes">
+            {item.includes.map((line) => (
+              <li>{line}</li>
+            ))}
+          </ul>
+          <a class="choose" href="#enquiry" data-choose={item.id}>
+            {t.packages.enquire}
+            <span class="visually-hidden">: {label(item)}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="terms">{terms}</p>
+
+    <section class="enquire" aria-labelledby="enquire">
+      <div>
+        <h2 id="enquire">{t.packages.enquire}</h2>
+        <p>{t.packages.enquireText}</p>
+      </div>
+      <PreviewForm
+        locale={locale}
+        id="enquiry"
+        submitLabel={t.form.sendEnquiry}
+        nameField="enquiry-name"
+        emailField="enquiry-email"
+      >
+        <Field
+          id="enquiry-package"
+          type="select"
+          label={t.form.package}
+          fieldName={t.form.fieldNames.package}
+          required
+          options={items.map((item) => ({ value: item.id, label: label(item) }))}
+          placeholderOption={t.form.choosePackage}
+        />
+        <Field
+          id="enquiry-name"
+          label={t.form.name}
+          fieldName={t.form.fieldNames.name}
+          autocomplete="name"
+          required
+        />
+        <Field
+          id="enquiry-email"
+          type="email"
+          label={t.form.email}
+          fieldName={t.form.fieldNames.email}
+          autocomplete="email"
+          required
+        />
+        <Field
+          id="enquiry-phone"
+          type="tel"
+          label={t.form.phone}
+          fieldName={t.form.fieldNames.phone}
+          hint={t.form.phoneHint}
+          autocomplete="tel"
+          pattern="\+?[0-9 \(\)\-]{7,20}"
+          optionalLabel={t.form.optional}
+        />
+        <Field
+          id="enquiry-arrival"
+          type="date"
+          label={t.form.arrival}
+          fieldName={t.form.fieldNames.arrival}
+          required
+        />
+        <Field
+          id="enquiry-guests"
+          type="number"
+          label={t.form.guests}
+          fieldName={t.form.fieldNames.guests}
+          min={1}
+          max={50}
+          required
+        />
+        <Field
+          id="enquiry-message"
+          type="textarea"
+          label={t.form.message}
+          fieldName={t.form.fieldNames.message}
+          optionalLabel={t.form.optional}
+        />
+      </PreviewForm>
+    </section>
+  </div>
+</Page>
+
+<style>
+  .content {
+    padding-bottom: 5rem;
+  }
+
+  .offers {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .offer {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    border: var(--rule) solid var(--color-ink);
+    border-radius: var(--radius-control);
+  }
+
+  .offer h2 {
+    margin: 0;
+    font-size: var(--text-24);
+  }
+
+  .price {
+    margin: 0.5rem 0 1.25rem;
+  }
+
+  .amount {
+    font-family: var(--font-display);
+    font-size: var(--text-36);
+    font-weight: 600;
+    line-height: var(--line-tight);
+  }
+
+  .includes {
+    flex: 1;
+    margin: 0 0 1.5rem;
+    padding: 1rem 0 0;
+    border-top: var(--rule) solid var(--hairline);
+    list-style: none;
+  }
+
+  .includes li {
+    padding-block: 0.375rem;
+  }
+
+  .choose {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: 600;
+  }
+
+  .terms {
+    margin: 1.25rem 0 0;
+    font-size: var(--text-16);
+  }
+
+  .enquire {
+    display: grid;
+    gap: 2rem;
+    margin-top: 5rem;
+    padding-top: 3rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  .enquire h2 {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-36);
+  }
+
+  .enquire p {
+    max-width: 36ch;
+    margin: 0;
+  }
+
+  @media (width >= 64rem) {
+    .offers {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .enquire {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 3rem;
+    }
+  }
+</style>

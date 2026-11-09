@@ -1,0 +1,73 @@
+---
+import { site } from '../data/site';
+import { formatTime } from '../lib/format';
+import { zoneOffset, type Occurrence } from '../lib/hours';
+import type { Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  slug: string;
+  title: string;
+  href: string;
+  type: string;
+  /** Empty in the row template the browser fills in. */
+  occurrence?: Occurrence | undefined;
+  /** The first row for each event shares its title with the event page. */
+  shareTitle?: boolean | undefined;
+}
+
+const { locale, slug, title, href, type, occurrence, shareTitle = false } = Astro.props;
+const datetime = occurrence
+  ? `${occurrence.date}T${occurrence.time}${zoneOffset(new Date(`${occurrence.date}T12:00:00Z`), site.timezone)}`
+  : undefined;
+---
+
+<li class="event-row" data-id={slug} data-type={type}>
+  <time class="time" datetime={datetime} data-field="time">
+    {occurrence && formatTime(occurrence.time, locale)}
+  </time>
+  <a
+    class="title"
+    href={href}
+    style={shareTitle ? `view-transition-name: event-${slug}-title` : undefined}
+  >
+    {title}
+  </a>
+</li>
+
+<style>
+  .event-row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.75rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  .time {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .title {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-block: calc((var(--tap) - 1lh) / -2);
+    font-family: var(--font-display);
+    font-size: var(--text-21);
+    font-weight: 600;
+    line-height: var(--line-tight);
+    text-decoration: none;
+    width: fit-content;
+  }
+
+  @media (hover: hover) {
+    .title:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+  }
+</style>

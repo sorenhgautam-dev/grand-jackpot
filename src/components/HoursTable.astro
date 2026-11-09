@@ -1,0 +1,74 @@
+---
+import { site } from '../data/site';
+import { formatIntervals, formatWeekday } from '../lib/format';
+import { strings, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  caption?: string;
+  class?: string;
+}
+
+const { locale, caption, class: className } = Astro.props;
+const t = strings(locale);
+
+// Monday first (ISO 8601); neighbouring days with the same hours share a row.
+const order = [1, 2, 3, 4, 5, 6, 0];
+const rows: { days: number[]; text: string }[] = [];
+for (const day of order) {
+  const text = formatIntervals(site.hours[day] ?? [], locale, t.hours);
+  const last = rows.at(-1);
+  if (last && last.text === text) last.days.push(day);
+  else rows.push({ days: [day], text });
+}
+
+const label = (days: number[]) => {
+  if (days.length === 7) return t.hours.everyDay;
+  const first = formatWeekday(days[0] ?? 0, locale);
+  const lastDay = formatWeekday(days.at(-1) ?? 0, locale);
+  return days.length === 1 ? first : `${first} – ${lastDay}`;
+};
+---
+
+<table class:list={['hours', className]}>
+  {caption && <caption>{caption}</caption>}
+  <tbody>
+    {rows.map((row) => (
+      <tr>
+        <th scope="row">{label(row.days)}</th>
+        <td>{row.text}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<style>
+  .hours {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  caption {
+    text-align: start;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+  }
+
+  th,
+  td {
+    padding: 0.5rem 0;
+    border-bottom: var(--rule) solid var(--hairline);
+    text-align: start;
+    vertical-align: baseline;
+  }
+
+  th {
+    font-weight: 400;
+    padding-inline-end: 1.5rem;
+  }
+
+  td {
+    text-align: end;
+  }
+</style>

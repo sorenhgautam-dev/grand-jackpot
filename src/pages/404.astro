@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import { localePath, strings } from '../lib/i18n';
+
+const en = strings('en');
+const hi = strings('hi');
+---
+
+<Base
+  locale="en"
+  path="/404/"
+  title={en.notFound.title}
+  description={en.notFound.text}
+  indexable={false}
+>
+  <div class="wrap content">
+    <h1>{en.notFound.title}</h1>
+    <p>
+      {en.notFound.text} <a href={localePath('en')}>{en.notFound.home}</a>
+    </p>
+    <p lang="hi">
+      {hi.notFound.text} <a href={localePath('hi')}>{hi.notFound.home}</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .content {
+    padding-block: 6rem 8rem;
+  }
+
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: var(--text-48);
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+</style>

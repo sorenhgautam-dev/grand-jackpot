@@ -1,0 +1,172 @@
+---
+import Button from '../../../components/Button.astro';
+import EventList from '../../../components/EventList.astro';
+import Page from '../../../layouts/Page.astro';
+import { entries } from '../../../lib/content';
+import { langParams, strings, type Locale } from '../../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+const events = await entries('events', locale);
+const types = [...new Set(events.map((event) => event.data.type))];
+---
+
+<Page
+  locale={locale}
+  path="/whats-on/"
+  title={t.events.title}
+  description={t.events.description}
+  intro={t.events.intro}
+>
+  <div class="wrap content">
+    <div class="filters" data-filters data-locale={locale}>
+      <fieldset>
+        <legend>{t.events.filterType}</legend>
+        <div class="chips">
+          <span class="chip">
+            <input type="radio" name="type" id="type-all" value="all" checked />
+            <label for="type-all">{t.events.all}</label>
+          </span>
+          {types.map((type) => (
+            <span class="chip">
+              <input type="radio" name="type" id={`type-${type}`} value={type} />
+              <label for={`type-${type}`}>{t.events.types[type]}</label>
+            </span>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset hidden>
+        <legend>{t.events.filterMonth}</legend>
+        <div class="chips" data-month-options>
+          <span class="chip">
+            <input type="radio" name="month" id="month-all" value="all" checked />
+            <label for="month-all">{t.events.all}</label>
+          </span>
+        </div>
+        <template data-month-chip>
+          <span class="chip">
+            <input type="radio" name="month" />
+            <label>{t.events.filterMonth}</label>
+          </span>
+        </template>
+      </fieldset>
+      <p class="count" aria-live="polite" data-count data-template={t.events.count}></p>
+    </div>
+
+    <EventList locale={locale} events={events} days={7} dateAs="h2" id="schedule">
+      <div class="empty" data-empty hidden>
+        <p>{t.events.empty}</p>
+        <Button variant="secondary" data-clear="">
+          {t.events.clear}
+        </Button>
+      </div>
+    </EventList>
+  </div>
+</Page>
+
+<script>
+  import '../../../scripts/filters';
+</script>
+
+<style>
+  .content {
+    padding-bottom: 5rem;
+  }
+
+  /* The chips only work with JavaScript, so they only show with it, from the first paint. */
+  .filters {
+    display: none;
+  }
+
+  :global(.js) .filters {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  fieldset[hidden] {
+    display: none;
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  legend {
+    margin-bottom: 0.5rem;
+    font-size: var(--text-14);
+    font-weight: 600;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chip {
+    position: relative;
+  }
+
+  .chip input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .chip label {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding: 0 1.125rem;
+    border: var(--rule) solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-16);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-quick) var(--ease-out),
+      color var(--dur-quick) var(--ease-out),
+      transform var(--dur-press) var(--ease-out);
+  }
+
+  .chip input:checked + label {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .chip input:focus-visible + label {
+    outline: var(--focus-ring) solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .chip input:active + label {
+    transform: scale(var(--press-scale));
+  }
+
+  @media (hover: hover) {
+    .chip input:not(:checked):hover + label {
+      background: var(--ground);
+    }
+  }
+
+  .count {
+    min-height: 1lh;
+    margin: 0;
+    font-size: var(--text-14);
+  }
+
+  .empty {
+    padding-block: 2rem;
+  }
+
+  .empty p {
+    margin: 0 0 1rem;
+  }
+</style>

@@ -1,0 +1,231 @@
+---
+import { primaryNav, secondaryNav } from '../data/nav';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+import OpeningStatus from './OpeningStatus.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  languagePath: string;
+}
+
+const { locale, path, languagePath } = Astro.props;
+const t = strings(locale);
+const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(itemPath);
+---
+
+<dialog id="menu" class="menu" data-menu aria-label={t.a11y.menu}>
+  <div class="panel">
+    <div class="top">
+      <OpeningStatus locale={locale} />
+      <button class="close" commandfor="menu" command="close" aria-label={t.a11y.closeMenu}>
+        <Icon name="close" />
+      </button>
+    </div>
+    <nav aria-label={t.a11y.mainNav}>
+      <ul class="primary">
+        {primaryNav.map((item, index) => (
+          <li style={`--i: ${index}`}>
+            <a
+              href={localePath(locale, item.path)}
+              aria-current={isCurrent(item.path) ? 'page' : undefined}
+            >
+              {t.nav[item.key]}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <ul class="secondary">
+        {secondaryNav.map((item, index) => (
+          <li style={`--i: ${index + primaryNav.length}`}>
+            <a
+              href={localePath(locale, item.path)}
+              aria-current={isCurrent(item.path) ? 'page' : undefined}
+            >
+              {t.nav[item.key]}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="bottom">
+      <LanguageSwitch locale={locale} path={languagePath} />
+      <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import '../scripts/menu';
+</script>
+
+<style>
+  .menu {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(100%, 26rem);
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-raised);
+    opacity: 0;
+    transform: translateX(var(--menu-travel));
+    transition-property: opacity, transform, overlay, display;
+    transition-duration: var(--dur-dialog-exit);
+    transition-timing-function: var(--ease-in);
+    transition-behavior: allow-discrete;
+  }
+
+  .menu[open] {
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--dur-dialog);
+    transition-timing-function: var(--ease-out);
+  }
+
+  @starting-style {
+    .menu[open] {
+      opacity: 0;
+      transform: translateX(var(--menu-travel));
+    }
+  }
+
+  .menu::backdrop {
+    background: var(--scrim);
+    opacity: 0;
+    transition-property: opacity, overlay, display;
+    transition-duration: var(--dur-dialog-exit);
+    transition-behavior: allow-discrete;
+  }
+
+  .menu[open]::backdrop {
+    opacity: 1;
+    transition-duration: var(--dur-dialog);
+  }
+
+  @starting-style {
+    .menu[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-height: 100%;
+    padding: max(1rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+      max(1.5rem, env(safe-area-inset-bottom)) 1.5rem;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .close {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    margin-inline-end: -0.625rem;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .close:active {
+    transform: scale(var(--press-scale));
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--dur-dialog) var(--ease-out),
+      transform var(--dur-dialog) var(--ease-out);
+    transition-delay: calc(var(--i) * var(--stagger-menu));
+  }
+
+  @starting-style {
+    .menu[open] li {
+      opacity: 0;
+      transform: translateX(var(--menu-travel));
+    }
+  }
+
+  .primary a {
+    display: flex;
+    align-items: center;
+    min-height: 3.5rem;
+    font-family: var(--font-display);
+    font-size: var(--text-36);
+    font-weight: 600;
+    line-height: var(--line-tight);
+    text-decoration: none;
+  }
+
+  .secondary {
+    padding-top: 1.5rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  .secondary a {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: var(--text-18);
+    text-decoration: none;
+  }
+
+  [aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--color-copper);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  .bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu,
+    .menu[open],
+    li {
+      transform: none;
+      transition-duration: var(--dur-quick);
+      transition-delay: 0s;
+    }
+
+    @starting-style {
+      .menu[open],
+      .menu[open] li {
+        transform: none;
+      }
+    }
+  }
+</style>

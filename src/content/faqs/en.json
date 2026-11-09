@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "question": "Who can enter?",
+      "answer": "Guests with a foreign passport. Bring it with you; reception checks it before you go onto the floor."
+    },
+    {
+      "question": "Is there an entry fee?",
+      "answer": "No. Entry is free, and every guest receives an INR 1,000 entry coupon."
+    },
+    {
+      "question": "When are you open?",
+      "answer": "24 hours a day, every day."
+    },
+    {
+      "question": "Can you collect me from my hotel?",
+      "answer": "Yes. Pickup and drop between your hotel and the casino is free. Call +977 970 505 5910 to arrange it."
+    },
+    {
+      "question": "Is there parking?",
+      "answer": "Yes, and it’s free."
+    },
+    {
+      "question": "Can I eat at the casino?",
+      "answer": "Yes. The buffet serves lunch and dinner on the gaming floor, and drinks are served at the tables."
+    },
+    {
+      "question": "Can I stay nearby?",
+      "answer": "The casino is in the grounds of Grand Hotel Kathmandu. The VIP package includes a room."
+    },
+    {
+      "question": "Is there Wi-Fi?",
+      "answer": "Yes, free Wi-Fi is available."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+---
+import { Image } from 'astro:assets';
+import mark from '../assets/brand/mark.png';
+import { site } from '../data/site';
+import { localePath, strings, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  /** Whether the current page is the home page, so the link isn't announced as a link to itself. */
+  current?: boolean;
+}
+
+const { locale, current = false } = Astro.props;
+---
+
+<a
+  class="logo"
+  href={localePath(locale)}
+  aria-label={strings(locale).a11y.home}
+  aria-current={current ? 'page' : undefined}
+>
+  <Image src={mark} alt="" width={40} height={45} loading="eager" class="mark" />
+  <span class="name" lang="en">
+    {site.name}
+  </span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: var(--tap);
+    text-decoration: none;
+  }
+
+  .mark {
+    width: 2.5rem;
+    height: auto;
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--text-21);
+    font-weight: 600;
+    line-height: var(--line-tight);
+    white-space: nowrap;
+  }
+
+  @media (width < 22.5rem) {
+    .name {
+      font-size: var(--text-18);
+    }
+  }
+</style>

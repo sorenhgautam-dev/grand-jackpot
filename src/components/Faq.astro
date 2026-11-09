@@ -1,0 +1,91 @@
+---
+interface Props {
+  items: { question: string; answer: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="faq">
+  {items.map((item) => (
+    <details>
+      <summary>{item.question}</summary>
+      <p class="answer">{item.answer}</p>
+    </details>
+  ))}
+</div>
+
+<style>
+  details {
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  details:last-child {
+    border-bottom: var(--rule) solid var(--hairline);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3.5rem;
+    padding-block: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '';
+    flex: none;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-25%) rotate(45deg);
+    transition: transform var(--dur-quick) var(--ease-out);
+  }
+
+  details[open] summary::after {
+    transform: translateY(25%) rotate(-135deg);
+  }
+
+  .answer {
+    max-width: var(--measure);
+    margin: 0;
+    padding-bottom: 1.25rem;
+  }
+
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  details[open] .answer {
+    animation: fade var(--dur-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    summary:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details[open] .answer {
+      animation-duration: var(--dur-quick);
+    }
+
+    summary::after {
+      transition: none;
+    }
+  }
+</style>

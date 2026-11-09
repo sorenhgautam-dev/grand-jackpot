@@ -1,0 +1,159 @@
+---
+import reception from '../../assets/photos/reception.jpg';
+import Field from '../../components/Field.astro';
+import HoursTable from '../../components/HoursTable.astro';
+import PreviewForm from '../../components/PreviewForm.astro';
+import { directionsUrl, site } from '../../data/site';
+import Page from '../../layouts/Page.astro';
+import { formatPhone } from '../../lib/format';
+import { langParams, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+---
+
+<Page
+  locale={locale}
+  path="/contact/"
+  title={t.contact.title}
+  description={t.contact.description}
+  intro={t.contact.intro}
+  ogImage={reception}
+>
+  <div class="wrap content">
+    <dl class="details">
+      <div>
+        <dt>{t.contact.phone}</dt>
+        <dd>
+          {site.phones.map((phone) => (
+            <a class="phone" href={`tel:${phone}`}>
+              {formatPhone(phone)}
+            </a>
+          ))}
+        </dd>
+      </div>
+      <div>
+        <dt>{t.contact.address}</dt>
+        <dd>
+          <address>
+            {site.hotel}
+            <br />
+            {site.address.street}
+            <br />
+            {site.address.locality}, {site.address.country}
+          </address>
+          <a class="directions" href={directionsUrl} rel="noopener">
+            {t.common.directions}
+          </a>
+        </dd>
+      </div>
+      <div>
+        <dt>{t.visit.hours}</dt>
+        <dd>
+          <HoursTable locale={locale} />
+        </dd>
+      </div>
+    </dl>
+
+    <section aria-labelledby="write">
+      <h2 id="write">{t.contact.write}</h2>
+      <PreviewForm
+        locale={locale}
+        id="contact-form"
+        submitLabel={t.form.send}
+        nameField="contact-name"
+        emailField="contact-email"
+      >
+        <Field
+          id="contact-name"
+          label={t.form.name}
+          fieldName={t.form.fieldNames.name}
+          autocomplete="name"
+          required
+        />
+        <Field
+          id="contact-email"
+          type="email"
+          label={t.form.email}
+          fieldName={t.form.fieldNames.email}
+          autocomplete="email"
+          required
+        />
+        <Field
+          id="contact-phone"
+          type="tel"
+          label={t.form.phone}
+          fieldName={t.form.fieldNames.phone}
+          hint={t.form.phoneHint}
+          autocomplete="tel"
+          pattern="\+?[0-9 \(\)\-]{7,20}"
+          optionalLabel={t.form.optional}
+        />
+        <Field
+          id="contact-message"
+          type="textarea"
+          label={t.form.message}
+          fieldName={t.form.fieldNames.message}
+          minlength={10}
+          required
+        />
+      </PreviewForm>
+    </section>
+  </div>
+</Page>
+
+<style>
+  .content {
+    display: grid;
+    gap: 4rem;
+    padding-bottom: 5rem;
+  }
+
+  .details {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    align-content: start;
+  }
+
+  .details > div {
+    padding-block: 1rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  dt {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .phone,
+  .directions {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    width: fit-content;
+    font-variant-numeric: tabular-nums;
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  h2 {
+    margin: 0 0 1.5rem;
+    font-size: var(--text-36);
+  }
+
+  @media (width >= 64rem) {
+    .content {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+      gap: 5rem;
+    }
+  }
+</style>

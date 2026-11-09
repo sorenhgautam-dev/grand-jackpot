@@ -1,0 +1,266 @@
+---
+import entranceTall from '../assets/photos/entrance-tall.jpg';
+import facade from '../assets/photos/facade-suits.jpg';
+import floor from '../assets/photos/floor.jpg';
+import hotel from '../assets/photos/hotel.jpg';
+import pool from '../assets/photos/pool.jpg';
+import reception from '../assets/photos/reception.jpg';
+import signpost from '../assets/photos/signpost.jpg';
+import { strings, type Locale } from '../lib/i18n';
+import Photo from './Photo.astro';
+
+interface Props {
+  locale: Locale;
+  /** The section's heading; the home page and the Visit page word it differently. */
+  heading: string;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { locale, heading, headingLevel: Heading = 'h2' } = Astro.props;
+const t = strings(locale);
+
+/** The route from the hotel gate to the floor, in the order a guest walks it. */
+const photos = [hotel, signpost, pool, facade, entranceTall, reception, floor];
+const stops = t.wayIn.stops.map((stop, index) => ({ ...stop, photo: photos[index] }));
+const name = `way-in-${locale}`;
+---
+
+<section class="way-in wrap" aria-labelledby={`${name}-title`}>
+  <div class="head">
+    <Heading id={`${name}-title`}>{heading}</Heading>
+    <p>{t.wayIn.intro}</p>
+  </div>
+  <fieldset class="stops">
+    <legend class="visually-hidden">{t.wayIn.choose}</legend>
+    <ol>
+      {stops.map((stop, index) => (
+        <li class="stop">
+          <input
+            type="radio"
+            name={name}
+            id={`${name}-${index}`}
+            class="visually-hidden"
+            checked={index === 0}
+          />
+          <label for={`${name}-${index}`}>
+            <span class="number" aria-hidden="true">
+              {index + 1}
+            </span>
+            <span class="words">
+              <span class="title">{stop.title}</span>
+              <span class="text">{stop.text}</span>
+            </span>
+          </label>
+          {stop.photo && (
+            <Photo
+              src={stop.photo}
+              alt={stop.alt}
+              ratio="portrait"
+              arch
+              sizes="(min-width: 64rem) 30vw, (min-width: 48rem) 45vw, 33vw"
+              class="stage"
+            />
+          )}
+        </li>
+      ))}
+    </ol>
+  </fieldset>
+</section>
+
+<style>
+  .way-in {
+    padding-block: 5rem;
+  }
+
+  .head {
+    max-width: 36rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .head :is(h2, h3) {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-36);
+  }
+
+  .head p {
+    margin: 0;
+    font-size: var(--text-21);
+    line-height: var(--line-snug);
+  }
+
+  .stops {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Phones: each stop beside a small arch of its photograph. */
+  .stop {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding-block: 1.25rem;
+    border-top: var(--rule) solid var(--hairline);
+  }
+
+  label {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .number {
+    flex: none;
+    width: 1.75rem;
+    font-family: var(--font-display);
+    font-size: var(--text-24);
+    font-weight: 600;
+    line-height: var(--line-tight);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .words {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: var(--text-21);
+    font-weight: 600;
+    line-height: var(--line-tight);
+  }
+
+  .text {
+    font-size: var(--text-16);
+    line-height: var(--line-body);
+    text-wrap: pretty;
+  }
+
+  /* Tablets and wider: choose a stop on the left, and its photograph stands in the arch on the right. */
+  @media (width >= 48rem) {
+    .stops {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3rem;
+    }
+
+    ol {
+      display: grid;
+      align-content: start;
+    }
+
+    .stop {
+      display: block;
+      padding: 0;
+      border-top: 0;
+    }
+
+    label {
+      position: relative;
+      min-height: var(--tap);
+      padding: 0.875rem 0 0.875rem 1.25rem;
+      border-top: var(--rule) solid var(--hairline);
+      cursor: pointer;
+    }
+
+    label::before {
+      content: '';
+      position: absolute;
+      inset: -1px auto 0 0;
+      width: 2px;
+      background: var(--color-copper);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform var(--dur-base) var(--ease-out);
+    }
+
+    .stop:has(input:checked) label::before {
+      transform: none;
+    }
+
+    .text {
+      display: none;
+    }
+
+    .stop:has(input:checked) .text {
+      display: block;
+    }
+
+    .stop :global(.stage) {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: calc(50% - 1.5rem);
+      opacity: 0;
+      transition: opacity var(--dur-base) var(--ease-out);
+      pointer-events: none;
+    }
+
+    .stop:has(input:checked) :global(.stage) {
+      opacity: 1;
+    }
+
+    /* Reserves the arch's height in the second column. */
+    .stops::after {
+      content: '';
+      grid-area: 1 / 2;
+      aspect-ratio: 4 / 5;
+    }
+
+    ol {
+      grid-area: 1 / 1;
+    }
+
+    input:focus-visible + label {
+      outline: var(--focus-ring) solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    @media (hover: hover) {
+      label:hover .title {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+      }
+    }
+  }
+
+  @media (width >= 64rem) {
+    .way-in {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 3rem;
+      padding-block: 7rem;
+    }
+
+    .head {
+      position: sticky;
+      top: calc(var(--header-height) + 2rem);
+      align-self: start;
+    }
+
+    .stops {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    }
+
+    .stop :global(.stage) {
+      width: calc((100% - 3rem) * 4 / 9);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    label::before,
+    .stop :global(.stage) {
+      transition-duration: var(--dur-quick);
+    }
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Button from '../../../components/Button.astro';
+import Prose from '../../../components/Prose.astro';
+import Page from '../../../layouts/Page.astro';
+import { entries, slugOf } from '../../../lib/content';
+import { langParams, localePath, strings, type Locale } from '../../../lib/i18n';
+
+export async function getStaticPaths() {
+  const paths = await Promise.all(
+    langParams().map(async ({ params, props }) =>
+      (await entries('games', props.locale)).map((game) => ({
+        params: { ...params, game: slugOf(game.id) },
+        props: { locale: props.locale, game },
+      })),
+    ),
+  );
+  return paths.flat();
+}
+
+const { locale, game } = Astro.props as { locale: Locale; game: CollectionEntry<'games'> };
+const t = strings(locale);
+const slug = slugOf(game.id);
+const { Content } = await render(game);
+---
+
+<Page
+  locale={locale}
+  path={`/gaming/${slug}/`}
+  title={game.data.title}
+  description={game.data.summary}
+  intro={game.data.summary}
+  photo={game.data.photo}
+  photoAlt={game.data.photoAlt}
+  transitionKey={`game-${slug}`}
+>
+  <a slot="before-title" class="back" href={localePath(locale, '/gaming/')}>
+    {t.common.backToGaming}
+  </a>
+  <div class="body wrap">
+    <Prose>
+      <Content />
+    </Prose>
+    <aside class="aside">
+      <p>
+        <strong>{t.gaming.whereLabel}</strong> {t.gaming.whereValue}
+      </p>
+      <p>{t.gaming.beforeYouPlayText}</p>
+      <Button href={localePath(locale, '/responsible-gaming/')} variant="quiet">
+        {t.gaming.playLink}
+      </Button>
+    </aside>
+  </div>
+</Page>
+
+<style>
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-bottom: 1rem;
+    font-size: var(--text-16);
+  }
+
+  .body {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: 5rem;
+  }
+
+  .aside {
+    align-self: start;
+    max-width: 30rem;
+    padding-top: 1rem;
+    border-top: var(--rule) solid var(--color-ink);
+    font-size: var(--text-16);
+  }
+
+  .aside p {
+    margin: 0 0 1rem;
+  }
+
+  @media (width >= 64rem) {
+    .body {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 4rem;
+    }
+  }
+</style>

@@ -1,0 +1,150 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { site } from '../data/site';
+import { slugOf } from '../lib/content';
+import { formatDateLong } from '../lib/format';
+import { upcoming, type Occurrence } from '../lib/hours';
+import { localePath, type Locale } from '../lib/i18n';
+import EventRow from './EventRow.astro';
+
+interface Props {
+  locale: Locale;
+  events: CollectionEntry<'events'>[];
+  /** How many days ahead to list. */
+  days: number;
+  /** Show only the first few occurrences. */
+  limit?: number | undefined;
+  /** The date labels are headings on the What's on page, plain text elsewhere. */
+  dateAs?: 'h2' | 'h3' | 'p';
+  id?: string | undefined;
+  /** Off on an event's own page, where the title already carries the shared name. */
+  shareTitles?: boolean;
+}
+
+const { locale, events, days, limit, dateAs: DateTag = 'p', id, shareTitles = true } = Astro.props;
+
+const items = events.map((event) => ({ id: slugOf(event.id), times: event.data.times }));
+const all = upcoming(items, new Date(), site.timezone, days);
+const occurrences = limit ? all.slice(0, limit) : all;
+const key = occurrences.map((o) => `${o.date}T${o.time}${o.id}`).join();
+
+const byDate = new Map<string, Occurrence[]>();
+for (const occurrence of occurrences) {
+  byDate.set(occurrence.date, [...(byDate.get(occurrence.date) ?? []), occurrence]);
+}
+
+const eventsBySlug = new Map(events.map((event) => [slugOf(event.id), event]));
+const shared = new Set<string>();
+const shareFirst = (slug: string) =>
+  shareTitles && !shared.has(slug) ? (shared.add(slug), true) : false;
+const href = (slug: string) => localePath(locale, `/whats-on/${slug}/`);
+
+const config = JSON.stringify({
+  locale,
+  timeZone: site.timezone,
+  days,
+  limit: limit ?? null,
+  shareTitles,
+  items,
+});
+---
+
+<div class="schedule" id={id} data-schedule={config} data-rendered={key}>
+  <ol class="days" data-days>
+    {[...byDate].map(([date, list]) => (
+      <li class="day" data-date={date} data-month={date.slice(0, 7)}>
+        <DateTag class="date" data-field="date">
+          {formatDateLong(date, locale)}
+        </DateTag>
+        <ol class="rows" data-rows>
+          {list.map((occurrence) => {
+            const event = eventsBySlug.get(occurrence.id);
+            return (
+              event && (
+                <EventRow
+                  locale={locale}
+                  slug={occurrence.id}
+                  title={event.data.title}
+                  href={href(occurrence.id)}
+                  type={event.data.type}
+                  occurrence={occurrence}
+                  shareTitle={shareFirst(occurrence.id)}
+                />
+              )
+            );
+          })}
+        </ol>
+      </li>
+    ))}
+  </ol>
+  <template data-day-template>
+    <li class="day">
+      <DateTag class="date" data-field="date" />
+      <ol class="rows" data-rows></ol>
+    </li>
+  </template>
+  {events.map((event) => (
+    <template data-row-template={slugOf(event.id)}>
+      <EventRow
+        locale={locale}
+        slug={slugOf(event.id)}
+        title={event.data.title}
+        href={href(slugOf(event.id))}
+        type={event.data.type}
+      />
+    </template>
+  ))}
+  <slot />
+</div>
+
+<script>
+  import { renderSchedule } from '../scripts/schedule';
+
+  for (const list of document.querySelectorAll<HTMLElement>('[data-schedule]')) {
+    renderSchedule(list);
+  }
+</script>
+
+<style>
+  .days,
+  .rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .day + .day {
+    margin-top: 1.5rem;
+  }
+
+  .date {
+    margin: 0 0 0.25rem;
+    font-family: var(--font-body);
+    font-size: var(--text-16);
+    font-weight: 600;
+    line-height: var(--line-snug);
+    letter-spacing: 0;
+  }
+
+  @media (width >= 48rem) {
+    .day {
+      display: grid;
+      grid-template-columns: 14rem minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .day + .day {
+      margin-top: 0;
+    }
+
+    .date {
+      padding-top: 0.875rem;
+      border-top: var(--rule) solid var(--color-ink);
+    }
+
+    .rows :global(.event-row:first-child) {
+      border-top-color: var(--color-ink);
+    }
+  }
+</style>

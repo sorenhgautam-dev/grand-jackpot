@@ -1,0 +1,31 @@
+---
+import Button from '../../components/Button.astro';
+import Page from '../../layouts/Page.astro';
+import { langParams, localePath, strings, type Locale } from '../../lib/i18n';
+
+export const getStaticPaths = () => langParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const t = strings(locale);
+---
+
+<Page
+  locale={locale}
+  path="/message-sent/"
+  title={t.form.previewTitle}
+  description={t.form.sentPreview}
+  intro={t.form.sentPreview}
+  indexable={false}
+>
+  <div class="wrap content">
+    <Button href={localePath(locale)} variant="secondary">
+      {t.notFound.home}
+    </Button>
+  </div>
+</Page>
+
+<style>
+  .content {
+    padding-bottom: 6rem;
+  }
+</style>

@@ -1,0 +1,113 @@
+---
+import type { ImageMetadata } from 'astro';
+import Photo from '../components/Photo.astro';
+import type { Locale } from '../lib/i18n';
+import Base from './Base.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  title: string;
+  description: string;
+  intro?: string | undefined;
+  photo?: ImageMetadata | undefined;
+  photoAlt?: string | undefined;
+  /** The link-preview image when the header has no photo. */
+  ogImage?: ImageMetadata | undefined;
+  /** Shared with the card that links here, so the photo and title travel between pages. */
+  transitionKey?: string | undefined;
+  indexable?: boolean | undefined;
+}
+
+const {
+  locale,
+  path,
+  title,
+  description,
+  intro,
+  photo,
+  photoAlt = '',
+  transitionKey,
+  indexable,
+  ogImage,
+} = Astro.props;
+---
+
+<Base
+  locale={locale}
+  path={path}
+  title={title}
+  description={description}
+  image={photo ?? ogImage}
+  imageAlt={photoAlt}
+  indexable={indexable}
+>
+  <header class:list={['page-header wrap', { 'has-photo': photo }]}>
+    <div class="text">
+      <slot name="before-title" />
+      <h1 style={transitionKey ? `view-transition-name: ${transitionKey}-title` : undefined}>
+        {title}
+      </h1>
+      {intro && <p class="intro">{intro}</p>}
+      <slot name="after-intro" />
+    </div>
+    {photo && (
+      <Photo
+        src={photo}
+        alt={photoAlt}
+        ratio="landscape"
+        sizes="(min-width: 64rem) 50vw, 100vw"
+        priority
+        transitionName={transitionKey && `${transitionKey}-photo`}
+        class="header-photo"
+      />
+    )}
+  </header>
+  <slot />
+</Base>
+
+<style>
+  .page-header {
+    display: grid;
+    gap: 2rem;
+    padding-block: 3rem 4rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--text-48);
+  }
+
+  .intro {
+    max-width: 40ch;
+    margin: 1.25rem 0 0;
+    font-size: var(--text-21);
+    line-height: var(--line-snug);
+  }
+
+  :lang(hi) .intro {
+    line-height: 1.6;
+  }
+
+  @media (width >= 48rem) {
+    h1 {
+      font-size: var(--text-60);
+    }
+  }
+
+  @media (width >= 64rem) {
+    .page-header {
+      padding-block: 5rem 6rem;
+    }
+
+    .has-photo {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      align-items: end;
+      gap: 4rem;
+    }
+
+    h1 {
+      font-size: var(--text-72);
+    }
+  }
+</style>

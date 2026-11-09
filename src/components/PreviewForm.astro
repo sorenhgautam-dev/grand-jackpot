@@ -1,0 +1,133 @@
+---
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
+
+interface Props {
+  locale: Locale;
+  id: string;
+  submitLabel: string;
+  /** The field whose value names the visitor in the confirmation. */
+  nameField: string;
+  emailField: string;
+}
+
+const { locale, id, submitLabel, nameField, emailField } = Astro.props;
+const t = strings(locale);
+const messages = JSON.stringify(t.form.errors);
+---
+
+<div class="preview-form" data-preview-form>
+  <form
+    id={id}
+    action={localePath(locale, '/message-sent/')}
+    method="get"
+    data-messages={messages}
+    data-summary-one={t.form.summaryTitleOne}
+    data-summary-many={t.form.summaryTitle}
+    data-name-field={nameField}
+    data-email-field={emailField}
+  >
+    <div class="summary" role="alert" tabindex="-1" data-summary hidden>
+      <h3 data-summary-title>{t.form.summaryTitleOne}</h3>
+      <ul data-summary-list></ul>
+    </div>
+    <p class="note">{t.form.previewNote}</p>
+    <div class="fields">
+      <slot />
+    </div>
+    <Button type="submit">{submitLabel}</Button>
+  </form>
+
+  <template data-sent>
+    <div class="sent" tabindex="-1">
+      <h3 data-sent-title data-template={t.form.sentTitle}>
+        {t.form.previewTitle}
+      </h3>
+      <p data-sent-text data-template={t.form.sentText}></p>
+      <p>{t.form.sentPreview}</p>
+      <Button variant="secondary" data-again="">
+        {t.form.again}
+      </Button>
+    </div>
+  </template>
+</div>
+
+<script>
+  import '../scripts/forms';
+</script>
+
+<style>
+  form,
+  .fields {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  form {
+    max-width: 36rem;
+  }
+
+  form :global(.button[type='submit']) {
+    justify-self: start;
+  }
+
+  .note {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-inline-start: 2px solid var(--color-copper);
+    background: var(--ground);
+    font-size: var(--text-16);
+  }
+
+  .summary {
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--color-red);
+    border-radius: var(--radius-control);
+  }
+
+  .summary:focus {
+    outline: none;
+  }
+
+  .summary:focus-visible {
+    outline: var(--focus-ring) solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .summary h3 {
+    margin: 0 0 0.5rem;
+    font-size: var(--text-21);
+  }
+
+  .summary ul {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  .summary a {
+    display: inline-block;
+    padding-block: 0.25rem;
+    color: var(--color-red);
+    font-weight: 600;
+  }
+
+  .preview-form :global(.sent) {
+    max-width: 36rem;
+    padding: 1.5rem;
+    border: var(--rule) solid var(--color-ink);
+    border-radius: var(--radius-control);
+  }
+
+  .preview-form :global(.sent:focus) {
+    outline: none;
+  }
+
+  .preview-form :global(.sent h3) {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-24);
+  }
+
+  .preview-form :global(.sent p) {
+    margin: 0 0 1rem;
+  }
+</style>
