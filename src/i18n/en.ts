@@ -140,8 +140,7 @@ export const en = {
     perPerson: 'per person',
     onRequest: 'Price on request',
     enquire: 'Ask about a package',
-    enquireText:
-      'Tell us when you plan to visit and which package you want. We reply by phone or email.',
+    enquireText: 'Tell us when you plan to visit and which package you want.',
   },
   visit: {
     title: 'Plan your visit',
@@ -173,7 +172,7 @@ export const en = {
     title: 'Contact',
     description:
       'Phone numbers and address for Grand Jackpot Casino, Grand Hotel, Soaltee Mode, Kathmandu.',
-    intro: 'Call us at any time. The casino is open 24 hours.',
+    intro: 'The casino is open 24 hours a day. Call either number below, or send a message.',
     phone: 'Phone',
     address: 'Address',
     write: 'Send a message',
@@ -225,7 +224,7 @@ export const en = {
     stops: [
       {
         title: 'Grand Hotel',
-        text: 'The casino is in the hotel’s grounds at Soaltee Mode. Come in through the main gate.',
+        text: 'The casino is in the grounds of the hotel at Soaltee Mode.',
         alt: 'Grand Hotel Kathmandu, a white and red tower behind an arched entrance lined with flags',
       },
       {

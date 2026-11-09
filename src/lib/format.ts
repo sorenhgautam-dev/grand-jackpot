@@ -16,20 +16,6 @@ function utcDate(date: string): Date {
   return new Date(`${date}T00:00:00Z`);
 }
 
-/** A calendar date ("YYYY-MM-DD") as a short weekday and day, for example "Mon 9". */
-export function formatDayShort(date: string, locale: Locale): { weekday: string; day: string } {
-  const instant = utcDate(date);
-  return {
-    weekday: new Intl.DateTimeFormat(intlLocale[locale], {
-      weekday: 'short',
-      timeZone: 'UTC',
-    }).format(instant),
-    day: new Intl.DateTimeFormat(intlLocale[locale], { day: 'numeric', timeZone: 'UTC' }).format(
-      instant,
-    ),
-  };
-}
-
 /** A calendar date in full, for example "Monday 9 November". */
 export function formatDateLong(date: string, locale: Locale): string {
   return new Intl.DateTimeFormat(intlLocale[locale], {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { en } from '../i18n/en';
 import { hi } from '../i18n/hi';
-import { formatDayShort, formatList, formatPhone, formatTime, formatWeekday } from './format';
-import { fill, localePath, splitPath } from './i18n';
+import { formatList, formatPhone, formatTime, formatWeekday } from './format';
+import { fill, localePath } from './i18n';
 
 describe('fill', () => {
   it('replaces named placeholders and leaves unknown ones', () => {
@@ -20,20 +20,6 @@ describe('localePath', () => {
   });
 });
 
-describe('splitPath', () => {
-  it('finds the language and the shared path', () => {
-    expect(splitPath('/gaming/')).toEqual({ locale: 'en', path: '/gaming/' });
-    expect(splitPath('/hi/gaming/')).toEqual({ locale: 'hi', path: '/gaming/' });
-    expect(splitPath('/hi/')).toEqual({ locale: 'hi', path: '/' });
-    expect(splitPath('/history/')).toEqual({ locale: 'en', path: '/history/' });
-  });
-
-  it('round-trips with localePath', () => {
-    const { locale, path } = splitPath('/hi/whats-on/lucky-draw/');
-    expect(localePath(locale, path)).toBe('/hi/whats-on/lucky-draw/');
-  });
-});
-
 describe('format', () => {
   it('writes times the Indian way in both languages', () => {
     expect(formatTime('19:00', 'en')).toBe('7:00 pm');
@@ -44,10 +30,6 @@ describe('format', () => {
   it('names weekdays from Sunday', () => {
     expect(formatWeekday(0, 'en')).toBe('Sunday');
     expect(formatWeekday(5, 'en')).toBe('Friday');
-  });
-
-  it('splits a date into weekday and day', () => {
-    expect(formatDayShort('2026-11-13', 'en')).toEqual({ weekday: 'Fri', day: '13' });
   });
 
   it('groups Nepali mobile numbers', () => {

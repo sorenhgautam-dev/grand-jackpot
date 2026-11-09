@@ -27,6 +27,6 @@ export function casinoJsonLd(url: URL, image: URL): Record<string, unknown> {
       })),
     ),
     publicAccess: true,
-    isAccessibleForFree: site.entry.free,
+    isAccessibleForFree: site.freeEntry,
   };
 }

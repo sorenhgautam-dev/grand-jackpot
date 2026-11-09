@@ -5,7 +5,7 @@
  * Contrast (WCAG 2): ink/paper 15.3, slate/paper 6.3, paper/felt 9.7, paper/red 5.8, copper/ink 5.5.
  * Copper is never text on paper (2.8); it marks the arch and rules only.
  */
-@theme {
+@theme static {
   --color-*: initial;
   --color-paper: #f6f1e9;
   --color-ink: #1d1b18;

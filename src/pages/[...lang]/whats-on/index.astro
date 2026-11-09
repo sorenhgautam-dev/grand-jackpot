@@ -115,10 +115,11 @@ const types = [...new Set(events.map((event) => event.data.type))];
 
   .chip input {
     position: absolute;
-    inset: 0;
-    opacity: 0;
+    width: 1px;
+    height: 1px;
     margin: 0;
-    cursor: pointer;
+    opacity: 0;
+    clip-path: inset(50%);
   }
 
   .chip label {
