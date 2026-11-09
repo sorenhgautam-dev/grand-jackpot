@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Brand tokens (RGB triplets so Tailwind can apply alpha) ---- */
+:root {
+  --ink: 9 9 8;
+  --ink-2: 17 17 15;
+  --ink-3: 26 26 23;
+  --emerald: 9 64 49;
+  --emerald-deep: 5 33 27;
+  --emerald-glow: 24 120 90;
+  --gold: 201 162 75;
+  --gold-light: 236 211 146;
+  --gold-dark: 140 104 38;
+  --ivory: 244 237 221;
+  --muted: 178 171 153;
+  --header-h: 76px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 8px);
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  body {
+    @apply bg-ink font-sans text-ivory antialiased;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 { @apply font-display; }
+  ::selection { background: rgb(var(--gold) / 0.35); color: rgb(var(--ivory)); }
+  :focus-visible {
+    outline: 2px solid rgb(var(--gold-light));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* Dhaka-inspired diamond lattice — very quiet texture */
+  .bg-dhaka {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23C9A24B' stroke-opacity='.11' stroke-width='1'%3E%3Cpath d='M28 2 54 28 28 54 2 28Z'/%3E%3Cpath d='M28 14 42 28 28 42 14 28Z'/%3E%3Ccircle cx='28' cy='28' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 56px 56px;
+  }
+  .gold-text {
+    background: linear-gradient(100deg, rgb(var(--gold-dark)) 0%, rgb(var(--gold-light)) 35%, rgb(var(--gold)) 55%, rgb(var(--gold-light)) 80%, rgb(var(--gold-dark)) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .gold-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(var(--gold) / 0.7), transparent);
+  }
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-7 py-3.5 text-[0.78rem] font-semibold uppercase tracking-wider2 transition-[transform,box-shadow,background-color,color] duration-200 ease-out;
+    min-height: 48px;
+  }
+  .btn-gold {
+    @apply text-ink;
+    background: linear-gradient(135deg, rgb(var(--gold-light)), rgb(var(--gold)) 55%, rgb(var(--gold-dark)));
+    clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+    padding-inline: 2.1rem;
+  }
+  .btn-gold:hover { filter: brightness(1.08); box-shadow: 0 0 0 1px rgb(var(--gold-light)); }
+  .btn-gold:active { transform: translateY(1px); }
+  .btn-ghost {
+    @apply border border-gold/60 text-gold-light;
+    padding-inline: 2.1rem;
+    background: rgb(var(--ink) / 0.35);
+    backdrop-filter: blur(4px);
+  }
+  .btn-ghost:hover { @apply bg-gold/15 text-ivory; }
+  .container-x { @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12; }
+  .field {
+    @apply w-full border-0 border-b border-gold/35 bg-transparent px-0 py-3 text-ivory placeholder:text-muted/70 transition-colors duration-200;
+    border-radius: 0;
+  }
+  .field:hover { border-color: rgb(var(--gold) / 0.7); }
+  .field:focus { outline: none; border-color: rgb(var(--gold-light)); box-shadow: 0 1px 0 0 rgb(var(--gold-light)); }
+  .field[aria-invalid="true"] { border-color: #f0a08a; }
+}
+
+/* Arch ("jharokha"-style window) frame used for imagery */
+.arch { border-radius: 999px 999px 4px 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow, .animate-spin-slow-rev, .animate-drift, .animate-sheen { animation: none !important; }
+}
