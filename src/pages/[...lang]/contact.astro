@@ -1,5 +1,6 @@
 ---
 import reception from '../../assets/photos/reception.jpg';
+import Button from '../../components/Button.astro';
 import Field from '../../components/Field.astro';
 import HoursTable from '../../components/HoursTable.astro';
 import PreviewForm from '../../components/PreviewForm.astro';
@@ -27,11 +28,13 @@ const t = strings(locale);
       <div>
         <dt>{t.contact.phone}</dt>
         <dd>
-          {site.phones.map((phone) => (
-            <a class="phone" href={`tel:${phone}`}>
-              {formatPhone(phone)}
-            </a>
-          ))}
+          <div class="actions">
+            {site.phones.map((phone) => (
+              <Button href={`tel:${phone}`} variant="secondary" icon="phone" class="phone">
+                {formatPhone(phone)}
+              </Button>
+            ))}
+          </div>
         </dd>
       </div>
       <div>
@@ -44,9 +47,11 @@ const t = strings(locale);
             <br />
             {site.address.locality}, {site.address.country}
           </address>
-          <a class="directions" href={directionsUrl} rel="noopener">
-            {t.common.directions}
-          </a>
+          <div class="actions">
+            <Button href={directionsUrl} rel="noopener" variant="secondary" icon="pin">
+              {t.common.directions}
+            </Button>
+          </div>
         </dd>
       </div>
       <div>
@@ -132,12 +137,14 @@ const t = strings(locale);
     margin: 0;
   }
 
-  .phone,
-  .directions {
+  .actions {
     display: flex;
-    align-items: center;
-    min-height: var(--tap);
-    width: fit-content;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .actions :global(.phone) {
     font-variant-numeric: tabular-nums;
   }
 

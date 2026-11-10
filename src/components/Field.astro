@@ -102,14 +102,14 @@ const shared = {
   .hint {
     margin: 0;
     font-size: var(--text-16);
-    color: var(--color-slate);
+    color: var(--color-sage);
   }
 
   .error {
     margin: 0;
     font-size: var(--text-16);
     font-weight: 600;
-    color: var(--color-red);
+    color: var(--color-alert);
   }
 
   input,
@@ -118,10 +118,10 @@ const shared = {
     width: 100%;
     min-height: var(--tap);
     padding: 0.625rem 0.75rem;
-    border: var(--rule) solid var(--color-slate);
+    border: var(--rule) solid var(--color-sage);
     border-radius: var(--radius-control);
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-emerald);
+    color: var(--color-cream);
     font: inherit;
     font-size: var(--text-18);
   }
@@ -131,7 +131,7 @@ const shared = {
   }
 
   :is(input, textarea, select)[aria-invalid='true'] {
-    border-color: var(--color-red);
+    border-color: var(--color-alert);
     border-width: 2px;
   }
 </style>

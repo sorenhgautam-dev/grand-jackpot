@@ -3,7 +3,6 @@ import { getImage } from 'astro:assets';
 import entrance from '../../assets/photos/entrance.jpg';
 import floor from '../../assets/photos/floor.jpg';
 import Button from '../../components/Button.astro';
-import Chip from '../../components/Chip.astro';
 import EventList from '../../components/EventList.astro';
 import Hero from '../../components/Hero.astro';
 import Marquee from '../../components/Marquee.astro';
@@ -43,7 +42,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   <section class="tonight wrap section" aria-labelledby="tonight">
     <div class="aside">
       <h2 id="tonight">{t.home.tonight}</h2>
-      <Button href={localePath(locale, '/whats-on/')} variant="quiet">
+      <Button href={localePath(locale, '/whats-on/')} variant="secondary">
         {t.common.seeAllEvents}
       </Button>
     </div>
@@ -80,7 +79,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   <section class="dining wrap section" aria-labelledby="dining">
     <div class="aside">
       <h2 id="dining">{t.home.dining}</h2>
-      <Button href={localePath(locale, '/dining/')} variant="quiet">
+      <Button href={localePath(locale, '/dining/')} variant="secondary">
         {t.home.diningLink}
       </Button>
     </div>
@@ -91,20 +90,11 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     </div>
   </section>
 
-  <section class="packages" data-surface="dark" data-pointer aria-labelledby="packages">
+  <section class="packages" data-surface="raised" data-pointer aria-labelledby="packages">
     <div class="wrap packages-inner">
-      <div class="packages-text">
-        <h2 id="packages">{t.home.packages}</h2>
-        <p>{t.home.packagesText}</p>
-        <Button href={localePath(locale, '/packages/')} variant="secondary" tone="dark">
-          {t.common.seePackages}
-        </Button>
-      </div>
-      <div class="chips">
-        <Chip tone="red" suit="heart" class="chip-a" />
-        <Chip tone="copper" suit="diamond" class="chip-b" />
-        <Chip tone="ink" suit="spade" class="chip-c" />
-      </div>
+      <h2 id="packages">{t.home.packages}</h2>
+      <p>{t.home.packagesText}</p>
+      <Button href={localePath(locale, '/packages/')}>{t.common.seePackages}</Button>
     </div>
   </section>
 
@@ -133,9 +123,15 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
           <address>
             {site.hotel}, {site.address.street}, {site.address.locality}
           </address>
-          <a class="directions" href={directionsUrl} rel="noopener">
+          <Button
+            href={directionsUrl}
+            rel="noopener"
+            variant="secondary"
+            icon="pin"
+            class="directions"
+          >
             {t.common.directions}
-          </a>
+          </Button>
         </dd>
       </div>
     </dl>
@@ -198,44 +194,64 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   }
 
   .packages {
+    view-timeline: --packages block;
+    position: relative;
+    isolation: isolate;
     overflow: clip;
     padding-block: 4rem;
   }
 
-  /* Three chips over the felt, at three depths. */
-  .chips {
-    position: relative;
-    height: 15rem;
-    margin-top: 2rem;
+  /* A card-back lattice in faint gold, fading out toward the words. */
+  .packages::before {
+    content: '';
+    position: absolute;
+    inset: -8% 0;
+    z-index: -1;
+    background:
+      repeating-linear-gradient(45deg, var(--lattice) 0 1px, transparent 1px 2rem),
+      repeating-linear-gradient(-45deg, var(--lattice) 0 1px, transparent 1px 2rem);
+    mask: linear-gradient(to left, var(--color-obsidian) 10%, transparent 80%);
+    pointer-events: none;
   }
 
-  .chips :global(.chip-a) {
-    --size: 8.5rem;
-    --depth: 0.6;
-    --pose-x: 62deg;
-    --pose-y: -14deg;
-    top: 8%;
-    left: 4%;
+  /* A warm light follows the pointer across the lattice. */
+  .packages::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      circle 26rem at var(--px, 70%) var(--py, 50%),
+      var(--glow),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--dur-follow) var(--ease-out);
+    pointer-events: none;
   }
 
-  .chips :global(.chip-b) {
-    --size: 6rem;
-    --depth: 1.2;
-    --pose-x: 48deg;
-    --pose-y: 24deg;
-    --delay: -1.8s;
-    top: 0;
-    right: 6%;
+  .packages[data-pointing]::after {
+    opacity: 0.4;
   }
 
-  .chips :global(.chip-c) {
-    --size: 5rem;
-    --depth: 1.8;
-    --pose-x: 70deg;
-    --pose-y: -40deg;
-    --delay: -3.4s;
-    bottom: 4%;
-    left: 52%;
+  @keyframes lattice-drift {
+    from {
+      translate: 0 -6%;
+    }
+
+    to {
+      translate: 0 6%;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .packages::before {
+        animation: lattice-drift linear both;
+        animation-timeline: --packages;
+        animation-range: cover;
+      }
+    }
   }
 
   .packages-inner p {
@@ -271,11 +287,8 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     font-style: normal;
   }
 
-  .directions {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-weight: 600;
+  dd :global(.directions) {
+    margin-top: 0.75rem;
   }
 
   @media (hover: hover) {
@@ -323,26 +336,17 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 
     .packages-inner {
       display: grid;
-      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-      gap: 4rem;
-      align-items: center;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 0 3rem;
     }
 
-    .chips {
-      height: 26rem;
-      margin-top: 0;
+    .packages-inner p {
+      margin-top: 0.5rem;
     }
 
-    .chips :global(.chip-a) {
-      --size: 13rem;
-    }
-
-    .chips :global(.chip-b) {
-      --size: 9rem;
-    }
-
-    .chips :global(.chip-c) {
-      --size: 7.5rem;
+    .packages-inner :global(.button) {
+      grid-column: 2;
+      justify-self: start;
     }
   }
 </style>

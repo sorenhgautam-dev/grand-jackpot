@@ -30,7 +30,8 @@ export default defineConfig({
       provider: fontProviders.google(),
       name: 'Eczar',
       cssVariable: '--font-eczar',
-      weights: ['500', '600'],
+      // A variable font: all three weights come from the same file.
+      weights: ['500', '600', '700'],
       styles: ['normal'],
       subsets: ['latin', 'devanagari'],
       fallbacks: ['Georgia', 'serif'],

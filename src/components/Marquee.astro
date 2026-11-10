@@ -57,21 +57,20 @@ const run = [...items, ...items, ...items];
   }
 
   .band[data-style='outline'] {
-    /* The stroke sits under a paper fill, so the font's overlapping contours don't show. */
-    color: var(--color-paper);
-    -webkit-text-stroke: 2px var(--color-ink);
+    /* The stroke sits under an obsidian fill, so the font's overlapping contours don't show. */
+    color: var(--color-obsidian);
+    -webkit-text-stroke: 2px var(--color-cream);
     paint-order: stroke fill;
     translate: -30% 0;
   }
 
   .suit {
-    color: var(--color-copper);
+    color: var(--color-gold);
     font-size: 0.5em;
   }
 
   .band[data-style='outline'] .suit {
     -webkit-text-stroke: 0;
-    color: var(--color-red);
   }
 
   @keyframes slide-left {

@@ -1,8 +1,11 @@
 ---
+import Icon from './Icon.astro';
+
 interface Props {
-  variant?: 'primary' | 'secondary' | 'quiet' | undefined;
-  /** The surface the button sits on. */
-  tone?: 'light' | 'dark' | undefined;
+  /** Primary: solid gold, the one main action. Secondary: a ghost with a thin border. */
+  variant?: 'primary' | 'secondary' | undefined;
+  /** An icon before the label, for actions whose icon carries meaning (directions, call). */
+  icon?: 'pin' | 'phone' | undefined;
   href?: string | undefined;
   type?: 'button' | 'submit' | undefined;
   rel?: string | undefined;
@@ -12,7 +15,7 @@ interface Props {
 
 const {
   variant = 'primary',
-  tone = 'light',
+  icon,
   href,
   type = 'button',
   rel,
@@ -22,24 +25,13 @@ const {
 ---
 
 {href ? (
-  <a
-    href={href}
-    rel={rel}
-    class:list={['button', className]}
-    data-variant={variant}
-    data-tone={tone}
-    {...data}
-  >
+  <a href={href} rel={rel} class:list={['button', className]} data-variant={variant} {...data}>
+    {icon && <Icon name={icon} />}
     <slot />
   </a>
 ) : (
-  <button
-    type={type}
-    class:list={['button', className]}
-    data-variant={variant}
-    data-tone={tone}
-    {...data}
-  >
+  <button type={type} class:list={['button', className]} data-variant={variant} {...data}>
+    {icon && <Icon name={icon} />}
     <slot />
   </button>
 )}
@@ -67,8 +59,24 @@ const {
     transition:
       transform var(--dur-press) var(--ease-out),
       translate var(--dur-follow) var(--ease-out),
-      background-color var(--dur-quick) var(--ease-out),
-      color var(--dur-quick) var(--ease-out);
+      background-color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+
+  .button :global(.icon) {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-inline-start: -0.25rem;
+  }
+
+  .button:active {
+    transform: scale(var(--press-scale));
+  }
+
+  [data-variant='primary'] {
+    background: var(--color-gold);
+    color: var(--color-obsidian);
   }
 
   /* A sheen crosses the primary button as the pointer arrives. */
@@ -82,37 +90,15 @@ const {
     pointer-events: none;
   }
 
-  .button:active {
-    transform: scale(var(--press-scale));
-  }
-
-  [data-variant='primary'] {
-    background: var(--color-red);
-    color: var(--color-paper);
-  }
-
   [data-variant='secondary'] {
-    border-color: currentColor;
+    border-color: var(--color-sage);
     background: transparent;
-    color: var(--color-ink);
-  }
-
-  [data-variant='secondary'][data-tone='dark'] {
-    color: var(--color-paper);
-  }
-
-  [data-variant='quiet'] {
-    padding-inline: 0;
-    background: transparent;
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.25em;
+    color: var(--color-cream);
   }
 
   @media (hover: hover) {
     [data-variant='primary']:hover {
-      background: var(--red-deep);
+      background: var(--gold-bright);
     }
 
     [data-variant='primary']:hover::after {
@@ -120,18 +106,9 @@ const {
       transition: translate var(--dur-follow) var(--ease-out);
     }
 
-    [data-variant='secondary'][data-tone='light']:hover {
-      background: var(--color-ink);
-      color: var(--color-paper);
-    }
-
-    [data-variant='secondary'][data-tone='dark']:hover {
-      background: var(--color-paper);
-      color: var(--color-ink);
-    }
-
-    [data-variant='quiet']:hover {
-      text-decoration-thickness: 2px;
+    [data-variant='secondary']:hover {
+      border-color: var(--color-gold);
+      background: var(--wash);
     }
   }
 </style>

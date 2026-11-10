@@ -64,7 +64,7 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
     top: 0;
     z-index: 10;
     padding-top: env(safe-area-inset-top);
-    color: var(--color-ink);
+    color: var(--color-cream);
     transition: color var(--dur-quick) var(--ease-out);
   }
 
@@ -74,14 +74,16 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
     inset: 0;
     z-index: -1;
     border-bottom: var(--rule) solid var(--hairline);
-    background: var(--color-paper);
+    background: color-mix(in oklab, var(--color-obsidian) 82%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
     opacity: 1;
     transition: opacity var(--dur-quick) var(--ease-out);
   }
 
   :global(.js) .header[data-over-hero]:not([data-solid]) {
-    --focus: var(--color-paper);
-    color: var(--color-paper);
+    --focus: var(--color-cream);
+    color: var(--color-cream);
   }
 
   :global(.js) .header[data-over-hero]:not([data-solid])::before {
@@ -152,7 +154,7 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
 
     .primary [aria-current='page'] {
       text-decoration: underline;
-      text-decoration-color: var(--color-copper);
+      text-decoration-color: var(--color-gold);
       text-decoration-thickness: 2px;
       text-underline-offset: 0.35em;
     }

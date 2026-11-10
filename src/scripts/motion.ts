@@ -1,6 +1,6 @@
 /*
- * Pointer-driven motion for mice and trackpads: the chip cursor, buttons that lean toward
- * the pointer, photographs that tilt under it, and scenes (the hero, the packages felt)
+ * Pointer-driven motion for mice and trackpads: the gold cursor, buttons that lean toward
+ * the pointer, photographs that tilt under it, and scenes (the hero, the packages lattice)
  * that follow it in depth. Touch screens get none of this. Reduced motion keeps the cursor
  * but drops its lag, the tilt, the pull and the depth.
  */

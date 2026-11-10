@@ -3,6 +3,7 @@ import { primaryNav, secondaryNav } from '../data/nav';
 import { directionsUrl, site } from '../data/site';
 import { formatIntervals, formatPhone } from '../lib/format';
 import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
 import LanguageSwitch from './LanguageSwitch.astro';
 
 interface Props {
@@ -18,7 +19,7 @@ const sameEveryDay = dayTexts.every((text) => text === dayTexts[0]);
 const year = new Date().getFullYear();
 ---
 
-<footer class="footer" data-surface="dark">
+<footer class="footer" data-surface="raised">
   <div class="wrap grid">
     <div class="place">
       <p class="name" lang="en">
@@ -31,9 +32,9 @@ const year = new Date().getFullYear();
         <br />
         {site.address.locality}, {site.address.country}
       </address>
-      <a href={directionsUrl} rel="noopener">
+      <Button href={directionsUrl} rel="noopener" variant="secondary" icon="pin">
         {t.common.directions}
-      </a>
+      </Button>
     </div>
 
     <div class="contact">
@@ -107,10 +108,9 @@ const year = new Date().getFullYear();
 
   address {
     font-style: normal;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
   }
 
-  .place > a,
   .phone,
   .links a,
   .play a,
@@ -173,7 +173,7 @@ const year = new Date().getFullYear();
     justify-content: space-between;
     gap: 1rem;
     padding-top: 1.5rem;
-    border-top: var(--rule) solid var(--hairline-dark);
+    border-top: var(--rule) solid var(--hairline);
     font-size: var(--text-14);
   }
 

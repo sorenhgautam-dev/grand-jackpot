@@ -56,7 +56,6 @@ const name = `way-in-${locale}`;
               src={stop.photo}
               alt={stop.alt}
               ratio="portrait"
-              arch
               sizes="(min-width: 64rem) 30vw, (min-width: 48rem) 45vw, 33vw"
               class="stage"
             />
@@ -101,7 +100,7 @@ const name = `way-in-${locale}`;
     list-style: none;
   }
 
-  /* Phones: each stop beside a small arch of its photograph. */
+  /* Phones: each stop beside a small frame of its photograph. */
   .stop {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -144,7 +143,7 @@ const name = `way-in-${locale}`;
     text-wrap: pretty;
   }
 
-  /* Tablets and wider: choose a stop on the left, and its photograph stands in the arch on the right. */
+  /* Tablets and wider: choose a stop on the left, and its photograph stands in the frame on the right. */
   @media (width >= 48rem) {
     .stops {
       position: relative;
@@ -177,7 +176,7 @@ const name = `way-in-${locale}`;
       position: absolute;
       inset: -1px auto 0 0;
       width: 2px;
-      background: var(--color-copper);
+      background: var(--color-gold);
       transform: scaleY(0);
       transform-origin: top;
       transition: transform var(--dur-base) var(--ease-out);
@@ -209,13 +208,13 @@ const name = `way-in-${locale}`;
       pointer-events: none;
     }
 
-    /* Choosing a stop swings its photograph open in the arch, like a door. */
+    /* Choosing a stop swings its photograph open in the frame, like a door. */
     .stop:has(input:checked) :global(.stage) {
       opacity: 1;
       transform: none;
     }
 
-    /* Reserves the arch's height in the second column. */
+    /* Reserves the frame's height in the second column. */
     .stops::after {
       content: '';
       grid-area: 1 / 2;

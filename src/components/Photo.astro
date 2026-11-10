@@ -13,8 +13,6 @@ interface Props {
   sizes: string;
   /** The page's LCP image: loaded eagerly at high priority and never faded. */
   priority?: boolean;
-  /** Top edge follows the casino's entrance arch. */
-  arch?: boolean;
   /** Focal point for the crop, as an `object-position` value. */
   position?: string;
   transitionName?: string | undefined;
@@ -29,7 +27,6 @@ const {
   ratio,
   sizes,
   priority = false,
-  arch = false,
   position = 'center',
   transitionName,
   tilt = false,
@@ -49,7 +46,6 @@ const style = [
 <div
   class:list={['photo', className]}
   data-ratio={ratio}
-  data-arch={arch ? '' : undefined}
   data-priority={priority ? '' : undefined}
   data-tilt={tilt ? '' : undefined}
   style={style}
@@ -72,9 +68,11 @@ const style = [
 </div>
 
 <style>
+  /* One frame for every photograph: 12px corners. */
   .photo {
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-media);
     background: var(--ground);
   }
 
@@ -88,10 +86,6 @@ const style = [
 
   .photo[data-ratio='portrait'] {
     aspect-ratio: 4 / 5;
-  }
-
-  .photo[data-arch] {
-    border-radius: var(--radius-arch);
   }
 
   .photo :global(img) {

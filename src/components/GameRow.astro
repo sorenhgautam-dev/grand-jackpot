@@ -70,15 +70,27 @@ const href = localePath(locale, `/gaming/${slug}/`);
     margin: 0.5rem 0 0.75rem;
   }
 
+  /* Looks like a ghost button; the whole row is the link. */
   .more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.25rem 1rem;
+    border: var(--rule) solid var(--color-sage);
+    border-radius: var(--radius-control);
     font-size: var(--text-16);
     font-weight: 600;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.25em;
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
   }
 
   @media (hover: hover) {
+    .game:hover .more {
+      border-color: var(--color-gold);
+      background: var(--wash);
+    }
+
     .game:hover h3 a {
       text-decoration: underline;
       text-decoration-thickness: 1px;

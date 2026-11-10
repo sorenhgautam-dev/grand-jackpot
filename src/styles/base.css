@@ -1,24 +1,28 @@
 :root {
-  /* State shades and grounds, derived from the named colours above. */
-  --red-deep: color-mix(in oklab, var(--color-red) 82%, var(--color-ink));
-  --ground: color-mix(in oklab, var(--color-slate) 14%, var(--color-paper));
-  --hairline: color-mix(in oklab, var(--color-ink) 16%, var(--color-paper));
-  --hairline-dark: color-mix(in oklab, var(--color-paper) 22%, var(--color-felt));
-  --focus: var(--color-red);
+  /* State shades, grounds and rules, derived from the named colours. */
+  --gold-bright: color-mix(in oklab, var(--color-gold) 80%, var(--color-cream));
+  /* Behind photographs while they load. */
+  --ground: var(--color-emerald);
+  /* Dividers: cream at 10%, quiet on both obsidian and emerald. */
+  --hairline: color-mix(in oklab, var(--color-cream) 10%, transparent);
+  /* A ghost control's fill on hover. */
+  --wash: color-mix(in oklab, var(--color-cream) 8%, transparent);
+  /* The packages lattice. */
+  --lattice: color-mix(in oklab, var(--color-gold) 16%, transparent);
+  --focus: var(--color-gold);
   /* Light: the warm spotlight under the cursor, and the sheen across a tilted photo. */
-  --glow: color-mix(in oklab, var(--color-copper) 55%, transparent);
-  --glare: color-mix(in oklab, var(--color-paper) 42%, transparent);
-  --chip-spot: color-mix(in oklab, var(--color-paper) 82%, var(--color-ink));
+  --glow: color-mix(in oklab, var(--color-gold) 50%, transparent);
+  --glare: color-mix(in oklab, var(--color-cream) 42%, transparent);
 }
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
     scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-obsidian);
+    color: var(--color-cream);
     font-family: var(--font-body);
     font-size: 100%;
     line-height: var(--line-body);
@@ -44,7 +48,7 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
     line-height: var(--line-tight);
     text-wrap: balance;
     letter-spacing: -0.01em;
@@ -67,6 +71,13 @@
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--dur-quick) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      text-decoration-color: var(--color-gold);
+    }
   }
 
   img,
@@ -82,15 +93,13 @@
     outline-offset: 2px;
   }
 
-  [data-surface='dark'] {
-    --focus: var(--color-paper);
-    background: var(--color-felt);
-    color: var(--color-paper);
+  [data-surface='raised'] {
+    background: var(--color-emerald);
   }
 
   ::selection {
-    background: var(--color-felt);
-    color: var(--color-paper);
+    background: var(--color-gold);
+    color: var(--color-obsidian);
   }
 }
 

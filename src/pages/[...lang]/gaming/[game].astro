@@ -46,7 +46,7 @@ const { Content } = await render(game);
         <strong>{t.gaming.whereLabel}</strong> {t.gaming.whereValue}
       </p>
       <p>{t.gaming.beforeYouPlayText}</p>
-      <Button href={localePath(locale, '/responsible-gaming/')} variant="quiet">
+      <Button href={localePath(locale, '/responsible-gaming/')} variant="secondary">
         {t.gaming.playLink}
       </Button>
     </aside>
@@ -72,7 +72,7 @@ const { Content } = await render(game);
     align-self: start;
     max-width: 30rem;
     padding-top: 1rem;
-    border-top: var(--rule) solid var(--color-ink);
+    border-top: var(--rule) solid var(--hairline);
     font-size: var(--text-16);
   }
 

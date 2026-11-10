@@ -1,5 +1,6 @@
 ---
 import hotel from '../../assets/photos/hotel.jpg';
+import Button from '../../components/Button.astro';
 import Faq from '../../components/Faq.astro';
 import HoursTable from '../../components/HoursTable.astro';
 import OpeningStatus from '../../components/OpeningStatus.astro';
@@ -47,9 +48,9 @@ const faqs = await dataFor('faqs', locale);
         <br />
         {site.address.locality}, {site.address.country}
       </address>
-      <a class="directions" href={directionsUrl} rel="noopener">
+      <Button href={directionsUrl} rel="noopener" variant="secondary" icon="pin" class="directions">
         {t.common.directions}
-      </a>
+      </Button>
       <ul>
         {t.visit.gettingHereItems.map((item) => (
           <li>{item}</li>
@@ -83,7 +84,7 @@ const faqs = await dataFor('faqs', locale);
 
   .facts section {
     padding-top: 1rem;
-    border-top: var(--rule) solid var(--color-ink);
+    border-top: var(--rule) solid var(--hairline);
   }
 
   h2 {
@@ -105,11 +106,8 @@ const faqs = await dataFor('faqs', locale);
     font-style: normal;
   }
 
-  .directions {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-weight: 600;
+  .facts :global(.directions) {
+    margin-block: 0.75rem 0.5rem;
   }
 
   .questions {

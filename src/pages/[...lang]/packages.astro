@@ -1,5 +1,6 @@
 ---
 import drinks from '../../assets/photos/drinks.jpg';
+import Button from '../../components/Button.astro';
 import Field from '../../components/Field.astro';
 import PreviewForm from '../../components/PreviewForm.astro';
 import Page from '../../layouts/Page.astro';
@@ -42,10 +43,10 @@ const label = (item: (typeof items)[number]) =>
               <li>{line}</li>
             ))}
           </ul>
-          <a class="choose" href="#enquiry" data-choose={item.id}>
+          <Button href="#enquiry" variant="secondary" class="choose" data-choose={item.id}>
             {t.packages.enquire}
             <span class="visually-hidden">: {label(item)}</span>
-          </a>
+          </Button>
         </li>
       ))}
     </ul>
@@ -142,8 +143,9 @@ const label = (item: (typeof items)[number]) =>
     display: flex;
     flex-direction: column;
     padding: 1.5rem;
-    border: var(--rule) solid var(--color-ink);
-    border-radius: var(--radius-control);
+    border: var(--rule) solid var(--hairline);
+    border-radius: var(--radius-media);
+    background: var(--color-emerald);
   }
 
   .offer h2 {
@@ -174,11 +176,8 @@ const label = (item: (typeof items)[number]) =>
     padding-block: 0.375rem;
   }
 
-  .choose {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-weight: 600;
+  .offer :global(.choose) {
+    align-self: start;
   }
 
   .terms {

@@ -81,7 +81,7 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
       <OpeningStatus locale={locale} />
       <div class="buttons">
         <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
-        <Button href={localePath(locale, '/whats-on/')} variant="secondary" tone="dark">
+        <Button href={localePath(locale, '/whats-on/')} variant="secondary">
           {t.common.whatsOn}
         </Button>
       </div>
@@ -95,7 +95,7 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
 
 <style>
   .hero {
-    --focus: var(--color-paper);
+    --focus: var(--color-cream);
     --mx: 0;
     --my: 0;
     view-timeline: --hero block;
@@ -107,8 +107,8 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
     min-height: max(36rem, 100svh);
     margin-top: calc(-1 * (var(--header-height) + env(safe-area-inset-top)));
     overflow: hidden;
-    background: var(--color-ink);
-    color: var(--color-paper);
+    background: var(--color-obsidian);
+    color: var(--color-cream);
   }
 
   .photo,
@@ -197,7 +197,7 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
     .char:hover {
       translate: 0 -0.12em;
       rotate: -6deg;
-      color: var(--color-copper);
+      color: var(--color-gold);
     }
   }
 

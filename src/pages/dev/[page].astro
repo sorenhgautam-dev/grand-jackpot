@@ -95,13 +95,13 @@ const [events, games, venues, faqs] = await Promise.all([
       <div class="row">
         <Button>Plan your visit</Button>
         <Button variant="secondary">See all events</Button>
-        <Button variant="quiet">Clear filters</Button>
-      </div>
-      <div class="row" data-surface="dark">
-        <Button>Plan your visit</Button>
-        <Button variant="secondary" tone="dark">
-          What’s on
+        <Button variant="secondary" icon="pin">
+          Directions
         </Button>
+      </div>
+      <div class="row" data-surface="raised">
+        <Button>Plan your visit</Button>
+        <Button variant="secondary">What’s on</Button>
       </div>
     </section>
 
@@ -139,7 +139,7 @@ const [events, games, venues, faqs] = await Promise.all([
       <div class="three">
         <Photo src={floor} alt="Wide" ratio="wide" sizes="33vw" />
         <Photo src={floor} alt="Landscape" ratio="landscape" sizes="33vw" />
-        <Photo src={signpost} alt="Portrait arch" ratio="portrait" arch sizes="33vw" />
+        <Photo src={signpost} alt="Portrait" ratio="portrait" sizes="33vw" />
       </div>
     </section>
 
