@@ -107,43 +107,45 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 
   <WayIn locale={locale} heading={t.home.wayIn} />
 
-  <section class="before wrap section" aria-labelledby="before">
-    <div class="head">
-      <h2 id="before">{t.home.beforeYouGo}</h2>
+  <section class="before" data-surface="charcoal" aria-labelledby="before">
+    <div class="wrap section">
+      <div class="head">
+        <h2 id="before">{t.home.beforeYouGo}</h2>
+      </div>
+      <dl class="reference body" data-stagger>
+        <div>
+          <dt class="label">{t.home.hoursLabel}</dt>
+          <dd>
+            <HoursTable locale={locale} />
+          </dd>
+        </div>
+        <div>
+          <dt class="label">{t.home.entryLabel}</dt>
+          <dd>{t.home.entryValue}</dd>
+        </div>
+        <div>
+          <dt class="label">{t.home.gettingHereLabel}</dt>
+          <dd>{t.home.gettingHereValue}</dd>
+        </div>
+        <div>
+          <dt class="label">{t.home.addressLabel}</dt>
+          <dd>
+            <address>
+              {site.hotel}, {site.address.street}, {site.address.locality}
+            </address>
+            <Button
+              href={directionsUrl}
+              rel="noopener"
+              variant="secondary"
+              icon="pin"
+              class="directions"
+            >
+              {t.common.directions}
+            </Button>
+          </dd>
+        </div>
+      </dl>
     </div>
-    <dl class="reference body" data-stagger>
-      <div>
-        <dt class="label">{t.home.hoursLabel}</dt>
-        <dd>
-          <HoursTable locale={locale} />
-        </dd>
-      </div>
-      <div>
-        <dt class="label">{t.home.entryLabel}</dt>
-        <dd>{t.home.entryValue}</dd>
-      </div>
-      <div>
-        <dt class="label">{t.home.gettingHereLabel}</dt>
-        <dd>{t.home.gettingHereValue}</dd>
-      </div>
-      <div>
-        <dt class="label">{t.home.addressLabel}</dt>
-        <dd>
-          <address>
-            {site.hotel}, {site.address.street}, {site.address.locality}
-          </address>
-          <Button
-            href={directionsUrl}
-            rel="noopener"
-            variant="secondary"
-            icon="pin"
-            class="directions"
-          >
-            {t.common.directions}
-          </Button>
-        </dd>
-      </div>
-    </dl>
   </section>
 </Base>
 
@@ -162,8 +164,9 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     grid-column: 1 / -1;
   }
 
-  .gaming,
-  .before {
+  /* Gold hairlines divide the black sections; the charcoal band needs none. */
+  .tonight,
+  .gaming {
     border-top: var(--rule) solid var(--line);
   }
 
@@ -236,7 +239,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   .game-names :global(.go) {
     flex: none;
     width: 1.125rem;
-    color: var(--accent-strong);
+    color: var(--accent);
     opacity: 0;
     translate: calc(-1 * var(--space-3)) 0;
     transition:
@@ -273,10 +276,6 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     gap: var(--space-2);
     padding-block: var(--space-5);
     border-top: var(--rule) solid var(--line);
-  }
-
-  dt {
-    color: var(--fg-muted);
   }
 
   dd {

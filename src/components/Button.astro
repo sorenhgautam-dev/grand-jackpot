@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 
 interface Props {
-  /** Primary: solid, the one main action in a view. Secondary: outlined. */
+  /** Primary: solid gold, the one main action in a view. Secondary: outlined in gold. */
   variant?: 'primary' | 'secondary' | undefined;
   /** An icon before the label, where it carries meaning (directions, call). */
   icon?: 'pin' | 'phone' | undefined;
@@ -106,18 +106,19 @@ const arrow = Boolean(href) && !icon;
     color: var(--action-fg);
   }
 
+  /* Gold fills to white under the pointer; the dark label keeps 19:1 either way. */
   [data-variant='primary']::before {
-    background: color-mix(in oklab, var(--action) 78%, var(--action-fg));
+    background: var(--fg);
   }
 
   [data-variant='secondary'] {
-    border-color: var(--line-strong);
+    border-color: var(--accent);
     background: transparent;
     color: var(--fg);
   }
 
   [data-variant='secondary']::before {
-    background: var(--fg);
+    background: var(--action);
   }
 
   @media (hover: hover) {
@@ -130,8 +131,8 @@ const arrow = Boolean(href) && !icon;
     }
 
     [data-variant='secondary']:hover {
-      border-color: var(--fg);
-      color: var(--bg);
+      border-color: var(--action);
+      color: var(--action-fg);
     }
   }
 

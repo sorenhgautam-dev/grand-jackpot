@@ -17,7 +17,7 @@ const t = strings(locale);
 const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(itemPath);
 ---
 
-<dialog id="menu" class="menu" data-menu data-surface="dark" aria-label={t.a11y.menu}>
+<dialog id="menu" class="menu" data-menu data-surface="ink" aria-label={t.a11y.menu}>
   <div class="panel">
     <div class="top">
       <OpeningStatus locale={locale} />
@@ -199,7 +199,7 @@ const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(ite
 
   [aria-current='page'] {
     text-decoration: underline;
-    text-decoration-color: var(--accent-strong);
+    text-decoration-color: var(--accent);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
   }

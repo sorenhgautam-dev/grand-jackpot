@@ -1,55 +1,44 @@
 /*
- * Surfaces. Light is the default; dark and umber are bands. Each sets the same roles, and
- * components use only the roles, so any component sits on any surface.
+ * Surfaces: black and gold throughout. Ink is the page; charcoal is the alternate band and
+ * the card; umber is the one warm band. Each surface sets the same roles, and components use
+ * only the roles, so any component sits on any surface.
  *   --bg, --surface        ground, and cards or fields on it
- *   --fg, --fg-muted       text, and secondary text (both AA at small sizes)
- *   --line, --line-strong  dividers, and control borders (3:1 or more)
- *   --accent               decoration; --accent-strong where it must be seen (3:1 or more)
+ *   --fg, --fg-muted       text, and secondary text (AA at small sizes on every surface)
+ *   --line, --line-strong  gold hairlines, and control borders (3:1 or more)
+ *   --accent               gold: labels, numerals, rules, outlined buttons (6.2 or more)
  *   --action, --action-fg  the primary button
  */
 :root,
-[data-surface='light'] {
-  --bg: var(--color-paper);
-  --surface: color-mix(in oklab, var(--color-stone) 26%, var(--color-paper));
-  --fg: var(--color-charcoal);
-  /* Grey darkened toward charcoal: 7.0 on paper, where plain grey would be 4.3. */
-  --fg-muted: color-mix(in oklab, var(--color-grey) 62%, var(--color-charcoal));
-  --line: color-mix(in oklab, var(--color-charcoal) 13%, transparent);
-  --line-strong: var(--color-grey);
-  --accent: var(--color-gold);
-  --accent-strong: var(--color-umber);
-  --focus: var(--color-charcoal);
-  --action: var(--color-charcoal);
-  --action-fg: var(--color-paper);
-  --alert: var(--color-alert);
-  --wash: color-mix(in oklab, var(--color-charcoal) 6%, transparent);
-}
-
-[data-surface='dark'] {
+[data-surface='ink'] {
   --bg: var(--color-ink);
   --surface: var(--color-charcoal);
   --fg: var(--color-paper);
   --fg-muted: var(--color-stone);
-  --line: color-mix(in oklab, var(--color-paper) 14%, transparent);
+  --line: color-mix(in oklab, var(--color-gold) 26%, transparent);
   --line-strong: var(--color-grey);
   --accent: var(--color-gold);
-  --accent-strong: var(--color-gold);
   --focus: var(--color-gold);
   --action: var(--color-gold);
   --action-fg: var(--color-ink);
   --alert: var(--color-alert-light);
-  --wash: color-mix(in oklab, var(--color-paper) 8%, transparent);
+  --wash: color-mix(in oklab, var(--color-paper) 6%, transparent);
 }
 
+[data-surface='charcoal'] {
+  --bg: var(--color-charcoal);
+  --surface: var(--color-ink);
+  --line: color-mix(in oklab, var(--color-gold) 30%, transparent);
+}
+
+/* Gold is 3.5 on umber: large type and borders only, so labels here turn stone. */
 [data-surface='umber'] {
   --bg: var(--color-umber);
   --surface: color-mix(in oklab, var(--color-umber) 72%, var(--color-ink));
   --fg: var(--color-paper);
   --fg-muted: var(--color-stone);
-  --line: color-mix(in oklab, var(--color-paper) 18%, transparent);
+  --line: color-mix(in oklab, var(--color-gold) 45%, transparent);
   --line-strong: var(--color-stone);
-  --accent: var(--color-gold);
-  --accent-strong: var(--color-gold);
+  --accent: var(--color-stone);
   --focus: var(--color-paper);
   --action: var(--color-paper);
   --action-fg: var(--color-charcoal);
@@ -59,7 +48,7 @@
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
     scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -76,11 +65,6 @@
   [data-surface] {
     background: var(--bg);
     color: var(--fg);
-  }
-
-  [data-surface='dark'],
-  [data-surface='umber'] {
-    color-scheme: dark;
   }
 
   :lang(hi) {
@@ -131,7 +115,7 @@
 
   @media (hover: hover) {
     a:hover {
-      text-decoration-color: var(--accent-strong);
+      text-decoration-color: var(--accent);
     }
   }
 
@@ -149,14 +133,15 @@
   }
 
   ::selection {
-    background: var(--color-charcoal);
-    color: var(--color-paper);
+    background: var(--color-gold);
+    color: var(--color-ink);
   }
 }
 
 /* Small uppercase labels for navigation and meta (dates, field names). Devanagari has no
    case, so on Hindi pages the label only changes size and weight. */
 @utility label {
+  color: var(--accent);
   font-size: var(--text-label);
   font-weight: 600;
   line-height: var(--line-snug);

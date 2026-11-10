@@ -19,7 +19,7 @@ const sameEveryDay = dayTexts.every((text) => text === dayTexts[0]);
 const year = new Date().getFullYear();
 ---
 
-<footer class="footer" data-surface="dark">
+<footer class="footer" data-surface="ink">
   <div class="wrap grid">
     <div class="place">
       <p class="name" lang="en">
@@ -88,6 +88,7 @@ const year = new Date().getFullYear();
 
 <style>
   .footer {
+    border-top: var(--rule) solid var(--line);
     padding-top: var(--space-8);
     font-size: var(--text-16);
   }
@@ -131,10 +132,6 @@ const year = new Date().getFullYear();
   .contact p {
     display: flex;
     flex-direction: column;
-  }
-
-  .label {
-    color: var(--fg-muted);
   }
 
   .phone {
@@ -188,6 +185,7 @@ const year = new Date().getFullYear();
 
   .wordmark span {
     display: block;
+    color: var(--accent);
     font-family: var(--font-grotesk);
     font-size: 6.6vw;
     line-height: var(--line-display);

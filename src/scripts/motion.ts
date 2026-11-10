@@ -13,16 +13,32 @@ const targets: [selector: string, kind: 'heading' | 'photo' | 'item'][] = [
 ];
 
 function reveal(): void {
+  /*
+   * Chrome measures only the visible part of an observed element, and a clipped heading or
+   * photograph has none until it is revealed. So clipped kinds are watched through their
+   * parent, which is never clipped, and revealed when the parent comes into view.
+   */
+  const waiting = new Map<Element, HTMLElement[]>();
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        (entry.target as HTMLElement).dataset.in = '';
+        for (const element of waiting.get(entry.target) ?? []) element.dataset.in = '';
+        waiting.delete(entry.target);
         observer.unobserve(entry.target);
       }
     },
     { rootMargin: '0px 0px -8% 0px' },
   );
+
+  const watch = (element: HTMLElement, through: Element): void => {
+    const list = waiting.get(through);
+    if (list) list.push(element);
+    else {
+      waiting.set(through, [element]);
+      observer.observe(through);
+    }
+  };
 
   for (const [selector, kind] of targets) {
     for (const element of document.querySelectorAll<HTMLElement>(selector)) {
@@ -31,8 +47,10 @@ function reveal(): void {
       if (kind === 'item') {
         const index = [...(element.parentElement?.children ?? [])].indexOf(element);
         element.style.setProperty('--delay', `calc(${Math.min(index, 8)} * var(--stagger-item))`);
+        watch(element, element);
+      } else {
+        watch(element, element.parentElement ?? element);
       }
-      observer.observe(element);
     }
   }
 }

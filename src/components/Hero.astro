@@ -26,7 +26,7 @@ const words = site.name.split(' ').map((word, index) => ({
 }));
 ---
 
-<section class="hero" data-surface="dark" data-hero aria-labelledby="hero-title">
+<section class="hero" data-surface="ink" data-hero aria-labelledby="hero-title">
   <div class="stage wrap">
     <Photo
       src={entranceTall}
@@ -94,27 +94,41 @@ const words = site.name.split(' ').map((word, index) => ({
     padding-block: var(--space-7) var(--space-8);
   }
 
-  /* The entrance stands behind the words. On phones it sits under them, overlapping the
-     foot of the last line; wider screens float it across the middle of the name. */
+  /* The entrance stands in the grid under the name, its top tucked behind the last line and
+     fading to black so the words over it stay sharp. A fine gold frame stands off it. It has
+     its own columns, so it never meets the text beside it. */
   .stage :global(.portrait) {
     position: relative;
     z-index: 0;
     grid-row: 2;
     grid-column: 5 / -1;
     margin-top: calc(var(--text-hero) * -0.38);
+    outline: var(--rule) solid var(--accent);
+    outline-offset: var(--space-2);
   }
 
-  /* The words sit over it and invert where they cross it. */
+  .stage :global(.portrait)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      var(--color-ink) 0%,
+      color-mix(in oklab, var(--color-ink) 55%, transparent) 22%,
+      transparent 48%
+    );
+    pointer-events: none;
+  }
+
   .name {
     position: relative;
     z-index: 1;
     grid-column: 1 / -1;
     margin: 0;
-    color: var(--color-paper);
+    color: var(--fg);
     font-size: var(--text-hero);
     line-height: var(--line-display);
     letter-spacing: 0;
-    mix-blend-mode: difference;
   }
 
   .word {
@@ -133,6 +147,7 @@ const words = site.name.split(' ').map((word, index) => ({
   }
 
   [data-face='serif'] {
+    color: var(--accent);
     font-family: var(--font-display);
     font-size: 1.12em;
     letter-spacing: -0.02em;
@@ -195,23 +210,22 @@ const words = site.name.split(' ').map((word, index) => ({
     }
 
     .stage :global(.portrait) {
-      position: absolute;
-      top: calc(var(--space-7) + var(--text-hero) * 0.42);
-      left: 36%;
-      width: clamp(12rem, 22vw, 30rem);
-      margin-top: 0;
+      grid-column: 4 / span 4;
+      margin-top: calc(var(--text-hero) * -0.44);
+      outline-offset: var(--space-3);
     }
 
     .aside {
       grid-row: 2;
-      grid-column: 8 / -1;
-      margin-top: var(--space-7);
+      grid-column: 9 / -1;
+      align-self: start;
+      margin-top: var(--space-6);
     }
   }
 
   @media (width >= 64rem) {
-    .aside {
-      grid-column: 9 / -1;
+    .stage :global(.portrait) {
+      grid-column: 5 / span 3;
     }
   }
 

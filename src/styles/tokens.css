@@ -1,13 +1,11 @@
 /*
- * Grand Jackpot Casino design tokens.
- *
- * Colour: two four-colour schemes from the client, used as light sections and dark bands.
- *   Light: paper #FDFDFD ground, charcoal #231F1E text, grey #7B7979 lines, gold #AE9F73 accent.
- *   Dark:  ink #0A0C0E ground, paper #FDFDFD text, stone #C5C4C2 secondary text, umber #59432D band.
- * Contrast (WCAG 2): charcoal/paper 16.1, paper/ink 19.3, stone/ink 11.2, stone/charcoal 9.4,
- *   gold/ink 7.5, ink/gold 7.5, paper/umber 9.1, stone/umber 5.3, umber/paper 9.1.
- *   Grey is 4.3 on paper, so it draws lines and control borders there, never small text.
- *   Gold is 2.6 on paper, so on light sections it is decoration only.
+ * Grand Jackpot Casino design tokens: black and gold, from the client's eight colours.
+ *   Ink #0A0C0E is the page, charcoal #231F1E the alternate band and the card, umber #59432D
+ *   the one warm band. Gold #AE9F73 draws hairlines, labels, numerals and the main buttons.
+ *   Paper #FDFDFD is the text, stone #C5C4C2 secondary text, grey #7B7979 field borders.
+ * Contrast (WCAG 2): paper/ink 19.3, paper/charcoal 16.1, paper/umber 9.1, stone/ink 11.2,
+ *   stone/charcoal 9.4, stone/umber 5.3, gold/ink 7.5, gold/charcoal 6.2, ink/gold 7.5,
+ *   grey/ink 4.5, grey/charcoal 3.8. Gold is 3.5 on umber, so there it is large or a border.
  * Roles per surface live in base.css; components use the roles, not these names.
  *
  * Type: Rozha One (display serif, Latin and Devanagari) for headings; Archivo Black for the
@@ -22,8 +20,7 @@
   --color-grey: #7b7979;
   --color-gold: #ae9f73;
   --color-umber: #59432d;
-  /* Form errors only, one for each ground: 6.4 on paper, 6.0 on ink. */
-  --color-alert: #b3261e;
+  /* Form errors only: none of the eight reads as an error. 6.0 on ink, 5.0 on charcoal. */
   --color-alert-light: #e5675e;
 
   --font-*: initial;
