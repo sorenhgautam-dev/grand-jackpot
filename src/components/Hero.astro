@@ -292,34 +292,20 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
     );
   }
 
-  /* Scrolling away, the entrance sinks back and the words lift off and tip over. */
-  @keyframes sink {
+  /* Scrolling away, the photograph moves at a third of the page's speed (plain parallax).
+     The words scroll with the page and stay sharp. */
+  @keyframes parallax {
     to {
-      scale: 1.22;
-      translate: 0 16%;
-    }
-  }
-
-  @keyframes lift-off {
-    to {
-      opacity: 0;
-      transform: perspective(var(--perspective)) translateY(-14%) rotateX(32deg);
+      translate: 0 33%;
     }
   }
 
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
       .photo img {
-        animation: sink linear both;
+        animation: parallax linear both;
         animation-timeline: --hero;
         animation-range: exit 0% exit 100%;
-      }
-
-      .text {
-        transform-origin: 50% 100%;
-        animation: lift-off linear both;
-        animation-timeline: --hero;
-        animation-range: exit 0% exit 75%;
       }
     }
   }

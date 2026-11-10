@@ -1,11 +1,13 @@
-/* On the home page the header is clear over the hero and turns solid once the hero has scrolled away. */
+/* On the home page the header is clear over the hero at the very top, and turns solid as soon
+   as the page scrolls, so the hero's words never slide under the logo and links. */
 const header = document.querySelector<HTMLElement>('[data-header]');
-const hero = document.querySelector<HTMLElement>('[data-hero]');
 
-if (header && hero) {
-  const observer = new IntersectionObserver(
-    ([entry]) => header.toggleAttribute('data-solid', !entry?.isIntersecting),
-    { rootMargin: `-${header.offsetHeight}px 0px 0px 0px` },
-  );
-  observer.observe(hero);
+if (header) {
+  let frame = 0;
+  const update = (): void => {
+    frame = 0;
+    header.toggleAttribute('data-solid', scrollY > 8);
+  };
+  addEventListener('scroll', () => (frame ||= requestAnimationFrame(update)), { passive: true });
+  update();
 }

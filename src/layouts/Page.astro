@@ -90,11 +90,10 @@ const {
     line-height: 1.6;
   }
 
-  /* The title and intro arrive tipping forward; pages that share a title with the
+  /* The title and intro rise into place; pages that share a title with the
      link that led here let the view transition carry it instead. */
   @media (prefers-reduced-motion: no-preference) {
     .arrives .text > :global(*) {
-      transform-origin: 50% 100%;
       animation: rise-in var(--dur-rise) var(--ease-out) both;
     }
 
