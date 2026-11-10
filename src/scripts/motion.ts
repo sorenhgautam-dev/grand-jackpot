@@ -1,44 +1,61 @@
 /*
- * Pointer-driven motion for mice and trackpads: the gold cursor, buttons that lean toward
- * the pointer, photographs that tilt under it, and scenes (the hero, the packages lattice)
- * that follow it in depth. Touch screens get none of this. Reduced motion keeps the cursor
- * but drops its lag, the tilt, the pull and the depth.
+ * Reveals for everyone who hasn't asked for reduced motion, and a cursor for mice and trackpads.
+ * See styles/motion.css: this script only marks elements; CSS does the moving.
  */
-const fine = matchMedia('(hover: hover) and (pointer: fine)');
-const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-const clamp = (value: number) => Math.min(1, Math.max(0, value));
+/** What reveals, and how. Photos that are a page's main image load eagerly and stay put. */
+const targets: [selector: string, kind: 'heading' | 'photo' | 'item'][] = [
+  ['main h2', 'heading'],
+  ['main .photo[data-ratio]:not([data-priority], .stage)', 'photo'],
+  ['main [data-stagger] > *', 'item'],
+];
 
-function token(element: Element, name: string, fallback: number): number {
-  const value = Number.parseFloat(getComputedStyle(element).getPropertyValue(name));
-  return Number.isFinite(value) ? value : fallback;
+function reveal(): void {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        (entry.target as HTMLElement).dataset.in = '';
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: '0px 0px -8% 0px' },
+  );
+
+  for (const [selector, kind] of targets) {
+    for (const element of document.querySelectorAll<HTMLElement>(selector)) {
+      if (element.dataset.reveal) continue;
+      element.dataset.reveal = kind;
+      if (kind === 'item') {
+        const index = [...(element.parentElement?.children ?? [])].indexOf(element);
+        element.style.setProperty('--delay', `calc(${Math.min(index, 8)} * var(--stagger-item))`);
+      }
+      observer.observe(element);
+    }
+  }
 }
 
 function cursor(): void {
   const root = document.createElement('div');
   root.className = 'cursor';
   root.setAttribute('aria-hidden', 'true');
-  const lag = document.createElement('div');
-  lag.className = 'cursor-lag';
-  lag.innerHTML = '<span class="cursor-ring"></span>';
-  const pin = document.createElement('div');
-  pin.className = 'cursor-pin';
-  pin.innerHTML = '<span class="cursor-dot"></span>';
-  root.append(lag, pin);
+  root.innerHTML = '<span class="cursor-dot"></span>';
   document.body.append(root);
   document.documentElement.dataset.cursor = '';
 
   let x = 0;
   let y = 0;
-  let lagX = 0;
-  let lagY = 0;
+  let shownX = 0;
+  let shownY = 0;
   let frame = 0;
 
   const follow = (): void => {
-    lagX += (x - lagX) * 0.2;
-    lagY += (y - lagY) * 0.2;
-    lag.style.transform = `translate3d(${lagX}px, ${lagY}px, 0)`;
-    frame = Math.abs(x - lagX) + Math.abs(y - lagY) > 0.2 ? requestAnimationFrame(follow) : 0;
+    shownX += (x - shownX) * 0.35;
+    shownY += (y - shownY) * 0.35;
+    root.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
+    frame = Math.abs(x - shownX) + Math.abs(y - shownY) > 0.2 ? requestAnimationFrame(follow) : 0;
   };
 
   addEventListener(
@@ -47,11 +64,10 @@ function cursor(): void {
       if (event.pointerType !== 'mouse') return;
       x = event.clientX;
       y = event.clientY;
-      pin.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      if (!('visible' in root.dataset) || reduce.matches) {
-        lagX = x;
-        lagY = y;
-        lag.style.transform = pin.style.transform;
+      if (!('visible' in root.dataset) || reduce) {
+        shownX = x;
+        shownY = y;
+        root.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       } else if (!frame) frame = requestAnimationFrame(follow);
       root.dataset.visible = '';
 
@@ -60,7 +76,7 @@ function cursor(): void {
         'textarea, select, input:not([type="radio"], [type="checkbox"])',
       )
         ? 'text'
-        : target?.closest('a, button, label, summary, [data-cursor-link]')
+        : target?.closest('a, button, label, summary, [data-link-zone]')
           ? 'link'
           : '';
     },
@@ -74,71 +90,8 @@ function cursor(): void {
   addEventListener('pointerup', () => delete root.dataset.down);
 }
 
-/** A photograph that tilts toward the pointer, lit where the pointer is. */
-function tilt(element: HTMLElement): void {
-  const zone = element.closest<HTMLElement>('[data-tilt-zone]') ?? element;
-  const max = token(element, '--tilt-max', 7);
+if (!reduce && 'IntersectionObserver' in window) reveal();
+if (fine) cursor();
 
-  zone.addEventListener('pointermove', (event) => {
-    const box = element.getBoundingClientRect();
-    const across = clamp((event.clientX - box.left) / box.width);
-    const down = clamp((event.clientY - box.top) / box.height);
-    element.style.setProperty('--ry', `${(across - 0.5) * 2 * max}deg`);
-    element.style.setProperty('--rx', `${(0.5 - down) * 2 * max}deg`);
-    element.style.setProperty('--gx', `${across * 100}%`);
-    element.style.setProperty('--gy', `${down * 100}%`);
-    element.dataset.tilting = '';
-  });
-
-  zone.addEventListener('pointerleave', () => {
-    for (const name of ['--rx', '--ry', '--gx', '--gy']) element.style.removeProperty(name);
-    delete element.dataset.tilting;
-  });
-}
-
-/** A button that leans toward the pointer. */
-function magnet(element: HTMLElement): void {
-  const pull = token(element, '--magnet', 0.28);
-  let box = element.getBoundingClientRect();
-
-  element.addEventListener('pointerenter', () => {
-    element.style.translate = '';
-    box = element.getBoundingClientRect();
-  });
-  element.addEventListener('pointermove', (event) => {
-    const dx = (event.clientX - (box.left + box.width / 2)) * pull;
-    const dy = (event.clientY - (box.top + box.height / 2)) * pull;
-    element.style.translate = `${dx}px ${dy}px`;
-  });
-  element.addEventListener('pointerleave', () => (element.style.translate = ''));
-}
-
-/** A scene that knows where the pointer is: --mx and --my run from -1 to 1. */
-function scene(element: HTMLElement): void {
-  element.addEventListener('pointermove', (event) => {
-    const box = element.getBoundingClientRect();
-    const across = (event.clientX - box.left) / box.width;
-    const down = (event.clientY - box.top) / box.height;
-    element.style.setProperty('--mx', ((across - 0.5) * 2).toFixed(3));
-    element.style.setProperty('--my', ((down - 0.5) * 2).toFixed(3));
-    element.style.setProperty('--px', `${(across * 100).toFixed(2)}%`);
-    element.style.setProperty('--py', `${(down * 100).toFixed(2)}%`);
-    element.dataset.pointing = '';
-  });
-  element.addEventListener('pointerleave', () => {
-    element.style.setProperty('--mx', '0');
-    element.style.setProperty('--my', '0');
-    delete element.dataset.pointing;
-  });
-}
-
-if (fine.matches) {
-  cursor();
-  if (!reduce.matches) {
-    for (const element of document.querySelectorAll<HTMLElement>('[data-tilt]')) tilt(element);
-    for (const element of document.querySelectorAll<HTMLElement>('.button, [data-magnetic]')) {
-      magnet(element);
-    }
-    for (const element of document.querySelectorAll<HTMLElement>('[data-pointer]')) scene(element);
-  }
-}
+// A module, so its names stay its own.
+export {};

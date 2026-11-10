@@ -1,11 +1,10 @@
 ---
-import { getImage } from 'astro:assets';
-import entrance from '../assets/photos/entrance.jpg';
 import entranceTall from '../assets/photos/entrance-tall.jpg';
 import { site } from '../data/site';
 import { localePath, strings, type Locale } from '../lib/i18n';
 import Button from './Button.astro';
 import OpeningStatus from './OpeningStatus.astro';
+import Photo from './Photo.astro';
 
 interface Props {
   locale: Locale;
@@ -14,70 +13,50 @@ interface Props {
 const { locale } = Astro.props;
 const t = strings(locale);
 
-/** Phones get a 4:5 crop centred on the sign; wider screens get the whole entrance. */
-const crops = [
-  { src: entranceTall, widths: [480, 720, 864], media: '(max-width: 47.99rem)' },
-  { src: entrance, widths: [960, 1280, 1600, 1920], media: undefined },
-];
-const formats = ['avif', 'webp'] as const;
-
-const sources = await Promise.all(
-  crops.flatMap((crop) =>
-    formats.map(async (format) => {
-      const images = await Promise.all(
-        crop.widths.map((width) => getImage({ src: crop.src, width, format })),
-      );
-      return {
-        media: crop.media,
-        type: `image/${format}`,
-        srcset: images.map((image, index) => `${image.src} ${crop.widths[index]}w`).join(', '),
-      };
-    }),
-  ),
-);
-const fallback = await getImage({ src: entrance, width: 1280, format: 'jpg' });
-
-/** The name, letter by letter, for the 3D intro. Screen readers get the name whole. */
-let count = 0;
-const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char, i: count++ })));
+/**
+ * The name set as the picture: one word per line, alternating a heavy grotesk in capitals
+ * with the display serif, placed start, indented and end. Screen readers get the name whole.
+ */
+const places = ['start', 'indent', 'end'] as const;
+const words = site.name.split(' ').map((word, index) => ({
+  word,
+  face: index % 2 ? 'serif' : 'grotesk',
+  place: places[index % places.length],
+  index,
+}));
 ---
 
-<section class="hero" data-hero data-pointer aria-labelledby="hero-title">
-  <picture class="photo">
-    {sources.map((source) => (
-      <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
-    ))}
-    <img
-      src={fallback.src}
+<section class="hero" data-surface="dark" data-hero aria-labelledby="hero-title">
+  <div class="stage wrap">
+    <Photo
+      src={entranceTall}
       alt={t.wayIn.stops[4]?.alt ?? ''}
-      width={entrance.width}
-      height={entrance.height}
-      fetchpriority="high"
-      loading="eager"
+      ratio="portrait"
+      sizes="(min-width: 48rem) 24vw, 46vw"
+      priority
+      class="portrait"
     />
-  </picture>
-  <div class="text wrap" style={`--letters: ${count}`}>
-    <h1 id="hero-title" lang="en">
+    <h1 id="hero-title" class="name" lang="en">
       <span class="visually-hidden">{site.name}</span>
-      <span class="letters" aria-hidden="true">
-        {words.map((letters, index) => (
-          <>
-            {index > 0 && ' '}
-            <span class="word">
-              {letters.map(({ char, i }) => (
-                <span class="char" style={`--c: ${i}`}>
-                  {char}
-                </span>
-              ))}
-            </span>
-          </>
-        ))}
-      </span>
+      {words.map(({ word, face, place, index }) => (
+        <span
+          class="word"
+          data-face={face}
+          data-place={place}
+          style={`--i: ${index}`}
+          aria-hidden="true"
+        >
+          <span class="inner">{word}</span>
+        </span>
+      ))}
     </h1>
-    <p class="line" style="--i: 0">
-      {t.home.line}
-    </p>
-    <div class="actions" style="--i: 1">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
+        <path d="M12 1.5v21M1.5 12h21M4.6 4.6l14.8 14.8M19.4 4.6L4.6 19.4"></path>
+      </svg>
+    </span>
+    <div class="aside">
+      <p class="line">{t.home.line}</p>
       <OpeningStatus locale={locale} />
       <div class="buttons">
         <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
@@ -95,225 +74,261 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
 
 <style>
   .hero {
-    --focus: var(--color-cream);
-    --mx: 0;
-    --my: 0;
+    /* Measure the scroll-out from the window's top edge, not below the header's padding. */
     view-timeline: --hero block;
-    /* Measure from the window's top edge, not below the header's scroll padding. */
     view-timeline-inset: 0;
-    position: relative;
     display: grid;
-    align-items: end;
+    align-items: center;
     min-height: max(36rem, 100svh);
     margin-top: calc(-1 * (var(--header-height) + env(safe-area-inset-top)));
-    overflow: hidden;
-    background: var(--color-obsidian);
-    color: var(--color-cream);
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top));
+    overflow: clip;
   }
 
-  .photo,
-  .photo img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* The photograph sits a little behind the glass and drifts against the pointer. */
-  .photo {
-    scale: 1.06;
-    translate: calc(var(--mx) * -1.25%) calc(var(--my) * -1.25%);
-    transition: translate var(--dur-follow) var(--ease-out);
-  }
-
-  .photo img {
-    object-fit: cover;
-    object-position: 50% 40%;
-  }
-
-  /* A warm spotlight follows the pointer across the entrance. */
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: radial-gradient(
-      circle 32rem at var(--px, 50%) var(--py, 40%),
-      var(--glow),
-      transparent 70%
-    );
-    mix-blend-mode: overlay;
-    opacity: 0;
-    transition: opacity var(--dur-follow) var(--ease-out);
-    pointer-events: none;
-  }
-
-  .hero[data-pointing]::before {
-    opacity: 1;
-  }
-
-  /* The one neutral scrim: under the header at the top, under the text at the foot. */
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(to bottom, var(--scrim) 0, transparent calc(var(--header-height) * 2.25)),
-      linear-gradient(to top, var(--scrim) 0, var(--scrim) 22%, transparent 64%);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .text {
+  .stage {
     position: relative;
-    z-index: 2;
-    translate: calc(var(--mx) * 0.75rem) calc(var(--my) * 0.5rem);
-    transition: translate var(--dur-follow) var(--ease-out);
-    padding-block: 6rem max(2.5rem, env(safe-area-inset-bottom));
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-5);
+    padding-block: var(--space-7) var(--space-8);
   }
 
-  h1 {
+  /* The entrance stands behind the words. */
+  .stage :global(.portrait) {
+    position: absolute;
+    z-index: 0;
+    top: calc(var(--space-7) + var(--text-hero) * 0.62);
+    right: max(var(--gutter), env(safe-area-inset-right));
+    width: 46%;
+  }
+
+  /* The words sit over it and invert where they cross it. */
+  .name {
+    position: relative;
+    z-index: 1;
+    grid-column: 1 / -1;
     margin: 0;
-    font-size: var(--text-48);
-    letter-spacing: -0.02em;
+    color: var(--color-paper);
+    font-size: var(--text-hero);
+    line-height: var(--line-display);
+    letter-spacing: 0;
+    mix-blend-mode: difference;
   }
 
   .word {
-    display: inline-block;
+    display: block;
     white-space: nowrap;
   }
 
-  .char {
+  .inner {
     display: inline-block;
-    transform-origin: 50% 100%;
-    transition:
-      translate var(--dur-base) var(--ease-out),
-      rotate var(--dur-base) var(--ease-out),
-      color var(--dur-base) var(--ease-out);
   }
 
-  /* Letters hop under the pointer. */
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .char:hover {
-      translate: 0 -0.12em;
-      rotate: -6deg;
-      color: var(--color-gold);
-    }
+  [data-face='grotesk'] {
+    font-family: var(--font-grotesk);
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+  }
+
+  [data-face='serif'] {
+    font-family: var(--font-display);
+    font-size: 1.12em;
+    letter-spacing: -0.02em;
+  }
+
+  [data-place='indent'] {
+    padding-inline-start: 0.45em;
+  }
+
+  [data-place='end'] {
+    text-align: end;
+  }
+
+  .mark {
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--space-7) + var(--text-hero) * 0.12);
+    right: max(var(--gutter), env(safe-area-inset-right));
+    width: calc(var(--text-hero) * 0.42);
+    color: var(--accent);
+  }
+
+  .mark svg {
+    width: 100%;
+    height: auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+  }
+
+  .aside {
+    position: relative;
+    z-index: 2;
+    grid-column: 1 / -1;
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    margin-top: var(--space-6);
   }
 
   .line {
     max-width: 34ch;
-    margin: 1rem 0 0;
-    font-size: var(--text-21);
-    line-height: var(--line-snug);
-  }
-
-  /* Devanagari has no metric-matched fallback; the fallback wraps to a third line, so reserve it. */
-  .line:lang(hi) {
-    min-height: 3lh;
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem 2rem;
-    margin-top: 2rem;
-  }
-
-  /* On phones the status keeps a line of its own, so its live text can't re-wrap the buttons. */
-  .actions :global(.status) {
-    flex-basis: 100%;
+    margin: 0;
+    font-size: var(--text-18);
+    line-height: var(--line-body);
   }
 
   .buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
   }
 
-  /* The entrance fills the whole first screen at every width. */
   @media (width >= 48rem) {
-    .photo img {
-      object-position: center;
+    .stage :global(.portrait) {
+      top: calc(var(--space-7) + var(--text-hero) * 0.42);
+      right: auto;
+      left: 36%;
+      width: clamp(12rem, 22vw, 30rem);
     }
 
-    .actions :global(.status) {
-      flex-basis: auto;
-    }
-
-    h1 {
-      font-size: var(--text-72);
+    .aside {
+      grid-column: 8 / -1;
+      margin-top: var(--space-7);
     }
   }
 
-  /* Two lines on wide screens, so the name stays left of the sign in the photograph. */
   @media (width >= 64rem) {
-    h1 {
-      max-width: 7em;
+    .aside {
+      grid-column: 9 / -1;
     }
   }
 
-  @keyframes settle {
+  /* ---------- Arrival: the words slide in from alternate sides, out of a blur ---------- */
+
+  @keyframes word-in {
     from {
-      transform: scale(var(--hero-scale));
+      opacity: 0.01;
+      translate: var(--from) 0;
+      filter: blur(0.12em);
+    }
+  }
+
+  @keyframes photo-in {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+
+    to {
+      clip-path: inset(0);
+    }
+  }
+
+  @keyframes photo-settle {
+    from {
+      scale: var(--reveal-zoom);
     }
   }
 
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(var(--rise));
+      translate: 0 var(--reveal-rise);
     }
   }
 
-  /* Each letter turns up out of the page, one after another. */
-  @keyframes flip {
+  @keyframes mark-in {
     from {
       opacity: 0;
-      transform: perspective(var(--perspective)) translateY(0.35em) rotateX(-95deg);
+      rotate: -120deg;
+      scale: 0.4;
     }
   }
 
-  :global([data-intro]) .photo {
-    animation: settle var(--dur-hero) var(--ease-out) both;
-  }
-
-  :global([data-intro]) .char {
-    animation: flip var(--dur-letter) var(--ease-out) both;
-    animation-delay: calc(var(--intro-delay) + var(--c) * var(--stagger-letter));
-  }
-
-  :global([data-intro]) :is(.line, .actions) {
-    animation: rise var(--dur-rise) var(--ease-out) both;
-    animation-delay: calc(
-      var(--intro-delay) + var(--letters) * var(--stagger-letter) + var(--i) * var(--stagger-hero)
-    );
-  }
-
-  /* Scrolling away, the photograph moves at a third of the page's speed (plain parallax).
-     The words scroll with the page and stay sharp. */
-  @keyframes parallax {
+  @keyframes turn {
     to {
-      translate: 0 33%;
+      rotate: 1turn;
     }
   }
 
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .photo img {
-        animation: parallax linear both;
+  /* ---------- Leaving: the words part sideways and the photograph lifts away faster ---------- */
+
+  @keyframes part-left {
+    to {
+      translate: -12% 0;
+    }
+  }
+
+  @keyframes part-right {
+    to {
+      translate: 12% 0;
+    }
+  }
+
+  @keyframes lift {
+    to {
+      translate: 0 -24%;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .inner {
+      --from: -0.6em;
+      animation: word-in var(--dur-hero-word) var(--ease-expo) both;
+      animation-delay: calc(120ms + var(--i) * var(--stagger-hero));
+    }
+
+    [data-place='indent'] .inner {
+      --from: 0.6em;
+    }
+
+    .stage :global(.portrait) {
+      animation: photo-in var(--dur-reveal-photo) var(--ease-expo) 200ms both;
+    }
+
+    .stage :global(.portrait img) {
+      animation: photo-settle calc(var(--dur-reveal-photo) * 1.4) var(--ease-expo) 200ms both;
+    }
+
+    .aside {
+      animation: rise var(--dur-reveal) var(--ease-expo) 650ms both;
+    }
+
+    .mark svg {
+      animation:
+        mark-in var(--dur-reveal) var(--ease-expo) 800ms both,
+        turn 24s linear 1.8s infinite;
+    }
+
+    @supports (animation-timeline: view()) {
+      .word {
+        animation: part-left linear both;
         animation-timeline: --hero;
         animation-range: exit 0% exit 100%;
       }
-    }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    .photo,
-    .text {
-      translate: none;
+      [data-place='indent'] {
+        animation-name: part-right;
+      }
+
+      .mark {
+        animation: lift linear both;
+        animation-timeline: --hero;
+        animation-range: exit 0% exit 100%;
+      }
+
+      .stage :global(.portrait) {
+        animation:
+          photo-in var(--dur-reveal-photo) var(--ease-expo) 200ms both,
+          lift linear both;
+        animation-timeline: auto, --hero;
+        animation-range:
+          normal,
+          exit 0% exit 100%;
+      }
     }
   }
 </style>

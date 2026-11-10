@@ -17,7 +17,7 @@ const t = strings(locale);
 const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(itemPath);
 ---
 
-<dialog id="menu" class="menu" data-menu aria-label={t.a11y.menu}>
+<dialog id="menu" class="menu" data-menu data-surface="dark" aria-label={t.a11y.menu}>
   <div class="panel">
     <div class="top">
       <OpeningStatus locale={locale} />
@@ -73,8 +73,8 @@ const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(ite
     margin: 0;
     padding: 0;
     border: 0;
-    background: var(--color-obsidian);
-    color: var(--color-cream);
+    background: var(--bg);
+    color: var(--fg);
     box-shadow: var(--shadow-raised);
     opacity: 0;
     transform: translateX(var(--menu-travel));
@@ -186,7 +186,7 @@ const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(ite
 
   .secondary {
     padding-top: 1.5rem;
-    border-top: var(--rule) solid var(--hairline);
+    border-top: var(--rule) solid var(--line);
   }
 
   .secondary a {
@@ -199,7 +199,7 @@ const isCurrent = (itemPath: string) => path === itemPath || path.startsWith(ite
 
   [aria-current='page'] {
     text-decoration: underline;
-    text-decoration-color: var(--color-gold);
+    text-decoration-color: var(--accent-strong);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
   }

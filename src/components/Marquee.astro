@@ -1,76 +1,84 @@
 ---
 /**
- * The games' names in big type, two bands sliding in opposite directions as the page scrolls.
- * The names are links elsewhere on the page, so this is decorative and hidden from assistive tech.
+ * The games' names in big type on a dark band: one row in the grotesk, one in the serif,
+ * sliding in opposite directions as the page scrolls. The names are links elsewhere on the
+ * page, so the band is decorative and hidden from assistive tech.
  */
 interface Props {
   items: string[];
 }
 
 const { items } = Astro.props;
-const suits = ['♠︎', '♥︎', '♦︎', '♣︎'];
 // Three runs, so the band always covers the window however far it slides.
 const run = [...items, ...items, ...items];
+const rows = [
+  { face: 'grotesk', names: run },
+  { face: 'serif', names: [...run].reverse() },
+];
 ---
 
-<div class="marquee" aria-hidden="true">
-  <div class="tilt">
-    {['solid', 'outline'].map((style) => (
-      <p class="band" data-style={style}>
-        {(style === 'outline' ? [...run].reverse() : run).map((item, index) => (
-          <>
-            <span class="item">{item}</span>
-            <span class="suit">{suits[index % suits.length]}</span>
-          </>
-        ))}
-      </p>
-    ))}
-  </div>
+<div class="marquee" data-surface="dark" aria-hidden="true">
+  {rows.map(({ face, names }) => (
+    <p class="band" data-face={face}>
+      {names.map((name) => (
+        <>
+          <span>{name}</span>
+          <span class="dot" />
+        </>
+      ))}
+    </p>
+  ))}
 </div>
 
 <style>
   .marquee {
     overflow: clip;
-    padding-block: 3rem;
-    border-top: var(--rule) solid var(--hairline);
-  }
-
-  .tilt {
-    rotate: -3deg;
+    padding-block: var(--space-8);
   }
 
   .band {
     display: flex;
     align-items: center;
-    gap: 0.4em;
+    gap: 0.35em;
     width: max-content;
     margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(var(--text-48), 9vw, var(--text-96) * 1.4);
-    font-weight: 600;
-    line-height: 1.15;
+    font-size: clamp(var(--text-48), 9vw, 10rem);
+    line-height: 1.05;
     white-space: nowrap;
   }
 
-  .band:lang(hi) {
-    line-height: 1.5;
+  .band[data-face='grotesk'] {
+    font-family: var(--font-grotesk);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
   }
 
-  .band[data-style='outline'] {
-    /* The stroke sits under an obsidian fill, so the font's overlapping contours don't show. */
-    color: var(--color-obsidian);
-    -webkit-text-stroke: 2px var(--color-cream);
+  /* The serif row runs in outline: a stroke under an ink fill hides the font's overlaps. */
+  .band[data-face='serif'] {
+    font-family: var(--font-display);
+    color: var(--bg);
+    -webkit-text-stroke: 1.5px var(--fg);
     paint-order: stroke fill;
     translate: -30% 0;
   }
 
-  .suit {
-    color: var(--color-gold);
-    font-size: 0.5em;
+  /* Archivo has no Devanagari: Hindi names take the body face at its heaviest. */
+  .band:lang(hi) {
+    line-height: 1.5;
   }
 
-  .band[data-style='outline'] .suit {
-    -webkit-text-stroke: 0;
+  .band[data-face='grotesk']:lang(hi) {
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .dot {
+    flex: none;
+    width: 0.16em;
+    height: 0.16em;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
   }
 
   @keyframes slide-left {
@@ -101,7 +109,7 @@ const run = [...items, ...items, ...items];
         animation-range: cover;
       }
 
-      .band[data-style='outline'] {
+      .band[data-face='serif'] {
         animation-name: slide-right;
       }
     }

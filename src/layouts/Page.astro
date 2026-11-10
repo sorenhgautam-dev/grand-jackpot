@@ -58,7 +58,6 @@ const {
         ratio="landscape"
         sizes="(min-width: 64rem) 50vw, 100vw"
         priority
-        tilt
         transitionName={transitionKey && `${transitionKey}-photo`}
         class="header-photo"
       />
@@ -70,18 +69,31 @@ const {
 <style>
   .page-header {
     display: grid;
-    gap: 2rem;
-    padding-block: 3rem 4rem;
+    gap: var(--space-6);
+    padding-block: var(--space-7) var(--space-8);
+  }
+
+  .text {
+    display: grid;
+    gap: var(--space-5);
+    align-content: end;
   }
 
   h1 {
     margin: 0;
-    font-size: var(--text-48);
+    font-size: var(--text-page);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  h1:lang(hi) {
+    line-height: var(--line-snug);
+    letter-spacing: 0;
   }
 
   .intro {
     max-width: 40ch;
-    margin: 1.25rem 0 0;
+    margin: 0;
     font-size: var(--text-21);
     line-height: var(--line-snug);
   }
@@ -90,41 +102,46 @@ const {
     line-height: 1.6;
   }
 
-  /* The title and intro rise into place; pages that share a title with the
-     link that led here let the view transition carry it instead. */
-  @media (prefers-reduced-motion: no-preference) {
-    .arrives .text > :global(*) {
-      animation: rise-in var(--dur-rise) var(--ease-out) both;
+  /* The title rises out from behind its own bottom edge, and the rest follows; pages that
+     share a title with the link that led here let the view transition carry it instead. */
+  @keyframes title-in {
+    from {
+      clip-path: inset(92% -0.5em -0.5em -0.5em);
+      translate: 0 0.3em;
     }
 
-    .arrives .text > :global(:nth-child(2)) {
-      animation-delay: var(--stagger-hero);
-    }
-
-    .arrives .text > :global(:nth-child(n + 3)) {
-      animation-delay: calc(2 * var(--stagger-hero));
+    to {
+      clip-path: inset(-0.5em);
+      translate: 0 0;
     }
   }
 
-  @media (width >= 48rem) {
-    h1 {
-      font-size: var(--text-60);
+  @keyframes rise-in {
+    from {
+      opacity: 0.01;
+      translate: 0 var(--reveal-rise);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .arrives h1 {
+      animation: title-in var(--dur-reveal) var(--ease-expo) both;
+    }
+
+    .arrives .text > :global(:not(h1)) {
+      animation: rise-in var(--dur-reveal) var(--ease-expo) 180ms both;
     }
   }
 
   @media (width >= 64rem) {
     .page-header {
-      padding-block: 5rem 6rem;
+      padding-block: var(--space-8) var(--space-9);
     }
 
     .has-photo {
       grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
       align-items: end;
-      gap: 4rem;
-    }
-
-    h1 {
-      font-size: var(--text-72);
+      gap: var(--space-8);
     }
   }
 </style>

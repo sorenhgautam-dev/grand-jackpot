@@ -27,14 +27,24 @@ export default defineConfig({
   },
   fonts: [
     {
+      // Headings in both languages: a high-contrast display serif with Devanagari.
       provider: fontProviders.google(),
-      name: 'Eczar',
-      cssVariable: '--font-eczar',
-      // A variable font: all three weights come from the same file.
-      weights: ['500', '600', '700'],
+      name: 'Rozha One',
+      cssVariable: '--font-rozha',
+      weights: ['400'],
       styles: ['normal'],
       subsets: ['latin', 'devanagari'],
       fallbacks: ['Georgia', 'serif'],
+    },
+    {
+      // The giant English words only (hero, marquee, footer wordmark): Latin is enough.
+      provider: fontProviders.google(),
+      name: 'Archivo Black',
+      cssVariable: '--font-archivo',
+      weights: ['400'],
+      styles: ['normal'],
+      subsets: ['latin'],
+      fallbacks: ['Arial', 'sans-serif'],
     },
     {
       provider: fontProviders.google(),

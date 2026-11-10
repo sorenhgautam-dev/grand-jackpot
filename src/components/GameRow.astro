@@ -15,7 +15,7 @@ const slug = slugOf(game.id);
 const href = localePath(locale, `/gaming/${slug}/`);
 ---
 
-<li class:list={['game', { 'has-photo': game.data.photo }]} data-tilt-zone>
+<li class:list={['game', { 'has-photo': game.data.photo }]} data-link-zone>
   {game.data.photo && (
     <Photo
       src={game.data.photo}
@@ -23,7 +23,6 @@ const href = localePath(locale, `/gaming/${slug}/`);
       ratio="landscape"
       sizes="(min-width: 48rem) 22rem, 100vw"
       transitionName={`game-${slug}-photo`}
-      tilt
     />
   )}
   <div class="words">
@@ -42,7 +41,7 @@ const href = localePath(locale, `/gaming/${slug}/`);
     display: grid;
     gap: 1rem;
     padding-block: 1.5rem;
-    border-top: var(--rule) solid var(--hairline);
+    border-top: var(--rule) solid var(--line);
   }
 
   h3 {
@@ -76,7 +75,7 @@ const href = localePath(locale, `/gaming/${slug}/`);
     align-items: center;
     min-height: 2.25rem;
     padding: 0.25rem 1rem;
-    border: var(--rule) solid var(--color-sage);
+    border: var(--rule) solid var(--line-strong);
     border-radius: var(--radius-control);
     font-size: var(--text-16);
     font-weight: 600;
@@ -87,7 +86,7 @@ const href = localePath(locale, `/gaming/${slug}/`);
 
   @media (hover: hover) {
     .game:hover .more {
-      border-color: var(--color-gold);
+      border-color: var(--accent-strong);
       background: var(--wash);
     }
 

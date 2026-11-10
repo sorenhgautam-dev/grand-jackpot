@@ -18,7 +18,7 @@ interface Props {
   /** The Open Graph image; the entrance by default. */
   image?: ImageMetadata | undefined;
   imageAlt?: string | undefined;
-  /** The home page: a clear header over the hero, and the hero's once-per-session intro. */
+  /** The home page: a clear header over the hero. */
   home?: boolean;
   /** Pages that exist in one form only, such as 404, carry no canonical or alternates. */
   indexable?: boolean | undefined;
@@ -37,8 +37,9 @@ const {
   jsonLd,
 } = Astro.props;
 const t = strings(locale);
-// Hindi pages mix Devanagari with the Latin brand name; Devanagari has no metric-matched fallback.
-const eczarPreloads =
+// Headings use Rozha One; the hero and wordmarks use Archivo Black (Latin only).
+// Hindi pages also need Rozha's and Mukta's Devanagari.
+const rozhaPreloads =
   locale === 'hi' ? [{ subset: 'latin' }, { subset: 'devanagari' }] : [{ subset: 'latin' }];
 const muktaPreloads =
   locale === 'hi'
@@ -91,27 +92,16 @@ const ogUrl = new URL(og.src, Astro.site);
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={imageAlt ?? t.wayIn.stops[4]?.alt ?? site.name} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#0a1110" />
+    <meta name="theme-color" content="#0a0c0e" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <Font cssVariable="--font-eczar" preload={eczarPreloads} />
+    <Font cssVariable="--font-rozha" preload={rozhaPreloads} />
+    <Font cssVariable="--font-archivo" preload={home} />
     <Font cssVariable="--font-mukta" preload={muktaPreloads} />
     <script is:inline>
       document.documentElement.classList.add('js');
     </script>
-    {home && <script is:inline>
-      try {
-        if (
-          !sessionStorage.getItem('gj-intro') &&
-          !matchMedia('(prefers-reduced-motion: reduce)').matches
-        ) {
-          document.documentElement.dataset.intro = '';
-          sessionStorage.setItem('gj-intro', '1');
-        }
-      } catch {
-        /* Storage blocked: skip the intro. */
-      }
-    </script>}
+
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
@@ -138,8 +128,8 @@ const ogUrl = new URL(og.src, Astro.site);
     z-index: 20;
     padding: 0.75rem 1rem;
     border-radius: var(--radius-control);
-    background: var(--color-gold);
-    color: var(--color-obsidian);
+    background: var(--action);
+    color: var(--action-fg);
     transform: translateY(-200%);
   }
 

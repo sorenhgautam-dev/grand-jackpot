@@ -1,29 +1,40 @@
 /*
- * Grand Jackpot Casino design tokens: a dark, high-contrast casino palette.
- * Obsidian is the page, emerald the raised surface (the table felt after hours), muted gold the
- * accent and the primary action, cream the text and sage the secondary text.
- * Contrast (WCAG 2): cream/obsidian 16.9, cream/emerald 14.6, sage/obsidian 6.5,
- * sage/emerald 5.6, gold/obsidian 7.8, gold/emerald 6.7, alert/obsidian 5.8, alert/emerald 5.0.
- * Cream is never text on gold (2.2): gold buttons carry obsidian text (7.8).
+ * Grand Jackpot Casino design tokens.
+ *
+ * Colour: two four-colour schemes from the client, used as light sections and dark bands.
+ *   Light: paper #FDFDFD ground, charcoal #231F1E text, grey #7B7979 lines, gold #AE9F73 accent.
+ *   Dark:  ink #0A0C0E ground, paper #FDFDFD text, stone #C5C4C2 secondary text, umber #59432D band.
+ * Contrast (WCAG 2): charcoal/paper 16.1, paper/ink 19.3, stone/ink 11.2, stone/charcoal 9.4,
+ *   gold/ink 7.5, ink/gold 7.5, paper/umber 9.1, stone/umber 5.3, umber/paper 9.1.
+ *   Grey is 4.3 on paper, so it draws lines and control borders there, never small text.
+ *   Gold is 2.6 on paper, so on light sections it is decoration only.
+ * Roles per surface live in base.css; components use the roles, not these names.
+ *
+ * Type: Rozha One (display serif, Latin and Devanagari) for headings; Archivo Black for the
+ * giant English words only; Mukta (Latin and Devanagari) for everything else.
  */
 @theme static {
   --color-*: initial;
-  --color-obsidian: #0a1110;
-  --color-emerald: #14221f;
-  --color-gold: #c5a059;
-  --color-cream: #f4f1ea;
-  --color-sage: #8c9b90;
-  /* Form errors only: errors need a colour of their own. */
-  --color-alert: #e5675e;
+  --color-ink: #0a0c0e;
+  --color-charcoal: #231f1e;
+  --color-paper: #fdfdfd;
+  --color-stone: #c5c4c2;
+  --color-grey: #7b7979;
+  --color-gold: #ae9f73;
+  --color-umber: #59432d;
+  /* Form errors only, one for each ground: 6.4 on paper, 6.0 on ink. */
+  --color-alert: #b3261e;
+  --color-alert-light: #e5675e;
 
   --font-*: initial;
-  --font-display: var(--font-eczar), Georgia, serif;
+  --font-display: var(--font-rozha), Georgia, serif;
+  --font-grotesk: var(--font-archivo), 'Arial Black', Arial, sans-serif;
   --font-body: var(--font-mukta), Arial, sans-serif;
   /* The one word "हिन्दी" on English pages uses the system's Devanagari face, so English
-     pages don't download a 60 KB Devanagari font for the language switch. */
+     pages don't download a Devanagari font for the language switch. */
   --font-native-label: 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif;
 
-  /* Bringhurst's scale. */
+  /* One scale (Bringhurst's), named by pixel size at the 16px root. */
   --text-*: initial;
   --text-12: 0.75rem;
   --text-14: 0.875rem;
@@ -38,18 +49,19 @@
   --text-96: 6rem;
 
   --radius-*: initial;
-  /* Every photograph has the same frame. */
-  --radius-media: 12px;
-  /* Buttons, fields and cards: half the photographs' radius. */
-  --radius-control: 6px;
-  /* Filter chips and the status dot are pills. */
+  /* Editorial: photographs, cards, buttons and fields are sharp rectangles. */
+  --radius-media: 0;
+  --radius-control: 0;
+  /* Filter chips and the status dot are the only round things. */
   --radius-pill: 999px;
 
   --shadow-*: initial;
-  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px rgb(0 0 0 / 0.5);
+  --shadow-raised: 0 1px 2px rgb(10 12 14 / 0.3), 0 20px 48px rgb(10 12 14 / 0.4);
 
   --ease-*: initial;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Long, decisive arrivals for reveals: fast start, very soft landing. */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
 
@@ -61,45 +73,49 @@
 }
 
 :root {
+  /* Motion: UI answers in under a quarter second; reveals and the hero take longer. */
   --dur-press: 80ms;
   --dur-quick: 140ms;
   --dur-base: 220ms;
+  --dur-hover: 480ms;
   --dur-dialog: 280ms;
   --dur-dialog-exit: 190ms;
   --dur-page: 240ms;
-  --dur-hero: 1400ms;
-  --dur-rise: 620ms;
+  --dur-reveal: 1000ms;
+  --dur-reveal-photo: 1300ms;
+  --dur-hero-word: 1200ms;
   --stagger-menu: 30ms;
-  --stagger-hero: 80ms;
-  --intro-delay: 200ms;
+  --stagger-item: 70ms;
+  --stagger-hero: 110ms;
   --rise: 12px;
+  --reveal-rise: 1.5rem;
   --menu-travel: 16px;
   --slide-travel: 32px;
   --press-scale: 0.98;
-  --hero-scale: 1.04;
+  --reveal-zoom: 1.2;
+  --hover-zoom: 1.04;
+  --cursor-dot: 0.75rem;
+  --cursor-grow: 4;
 
-  /* Depth and pointer motion. */
-  --perspective: 900px;
-  --dur-tilt: 600ms;
-  --dur-follow: 700ms;
-  --dur-door: 640ms;
-  --dur-letter: 760ms;
-  --stagger-letter: 32ms;
-  --tilt-max: 7;
-  --magnet: 0.28;
-  --cursor-size: 2.25rem;
-  --cursor-dot: 0.375rem;
-  --cursor-grow: 1.9;
-  --progress-height: 2px;
+  /* The one scrim, for text over photographs: ink at 72%. */
+  --scrim: rgb(10 12 14 / 0.72);
 
-  /* The one scrim, for text over photographs: obsidian at 72%. */
-  --scrim: rgb(10 17 16 / 0.72);
-
-  /* The root size grows with the window past tablet width, so the whole layout (type,
-     spacing, the page's max width) scales up on laptops and monitors instead of sitting small
-     in the middle. 16px up to about 1024px wide; 18.5px at 1440; 21px at 1920; 24px at most.
-     Percent and rem keep the visitor's own browser font size in charge. */
+  /* The root size grows with the window past tablet width, so type, spacing and the page's
+     width scale together on laptops and monitors. 16px to about 1024px wide; 18.5px at 1440;
+     21px at 1920; 24px at most. Percent and rem keep the visitor's browser font size in charge. */
   --root-size: clamp(100%, 0.6875rem + 0.52vw, 150%);
+
+  /* Spacing: one scale for gaps inside components, one rhythm between sections. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --section-space: var(--space-8);
 
   --measure: 66ch;
   --gutter: clamp(1rem, 4vw, 3rem);
@@ -108,16 +124,32 @@
   --tap: 44px;
   --focus-ring: 2px;
   --rule: 1px;
-  --line-tight: 1.15;
+
+  /* Leading: display type is set solid, headings tight, text open. */
+  --line-display: 0.88;
+  --line-tight: 1.1;
   --line-snug: 1.3;
   --line-body: 1.6;
+  --tracking-label: 0.08em;
 
-  /* Section headings: 36 on phones and tablets, 48 on laptops and wider. */
+  /* Type roles. */
+  --text-label: var(--text-14);
   --text-section: var(--text-36);
+  --text-page: var(--text-48);
+  --text-hero: clamp(4.25rem, 19vw, 8rem);
+}
+
+@media (width >= 48rem) {
+  :root {
+    --text-page: var(--text-72);
+    --text-hero: clamp(6rem, 11vw, 14rem);
+  }
 }
 
 @media (width >= 64rem) {
   :root {
-    --text-section: var(--text-48);
+    --section-space: var(--space-9);
+    --text-section: var(--text-60);
+    --text-page: var(--text-96);
   }
 }

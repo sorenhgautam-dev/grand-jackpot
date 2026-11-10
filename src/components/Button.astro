@@ -2,9 +2,9 @@
 import Icon from './Icon.astro';
 
 interface Props {
-  /** Primary: solid gold, the one main action. Secondary: a ghost with a thin border. */
+  /** Primary: solid, the one main action in a view. Secondary: outlined. */
   variant?: 'primary' | 'secondary' | undefined;
-  /** An icon before the label, for actions whose icon carries meaning (directions, call). */
+  /** An icon before the label, where it carries meaning (directions, call). */
   icon?: 'pin' | 'phone' | undefined;
   href?: string | undefined;
   type?: 'button' | 'submit' | undefined;
@@ -22,17 +22,24 @@ const {
   class: className,
   ...data
 } = Astro.props;
+/** Links that go somewhere carry an arrow; actions with their own icon don't need one. */
+const arrow = Boolean(href) && !icon;
 ---
 
 {href ? (
   <a href={href} rel={rel} class:list={['button', className]} data-variant={variant} {...data}>
     {icon && <Icon name={icon} />}
-    <slot />
+    <span class="text">
+      <slot />
+    </span>
+    {arrow && <Icon name="arrow" class="arrow" />}
   </a>
 ) : (
   <button type={type} class:list={['button', className]} data-variant={variant} {...data}>
     {icon && <Icon name={icon} />}
-    <slot />
+    <span class="text">
+      <slot />
+    </span>
   </button>
 )}
 
@@ -44,30 +51,50 @@ const {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-height: var(--tap);
-    padding: 0.5rem 1.25rem;
+    gap: var(--space-3);
+    min-height: calc(var(--tap) + var(--space-1));
+    padding: var(--space-2) var(--space-5);
     border: var(--rule) solid transparent;
     border-radius: var(--radius-control);
     font: inherit;
-    font-size: var(--text-16);
+    font-size: var(--text-label);
     font-weight: 600;
+    letter-spacing: var(--tracking-label);
     line-height: var(--line-snug);
+    text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
     transition:
       transform var(--dur-press) var(--ease-out),
-      translate var(--dur-follow) var(--ease-out),
-      background-color var(--dur-base) var(--ease-out),
-      border-color var(--dur-base) var(--ease-out),
-      color var(--dur-base) var(--ease-out);
+      color var(--dur-hover) var(--ease-expo),
+      border-color var(--dur-hover) var(--ease-expo);
+  }
+
+  .button:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
+  }
+
+  /* The hover fill: rises from the bottom edge. */
+  .button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    scale: 1 0;
+    transform-origin: 50% 100%;
+    transition: scale var(--dur-hover) var(--ease-expo);
   }
 
   .button :global(.icon) {
     width: 1.125rem;
     height: 1.125rem;
-    margin-inline-start: -0.25rem;
+  }
+
+  .button :global(.arrow) {
+    margin-inline-end: calc(-1 * var(--space-1));
+    transition: translate var(--dur-hover) var(--ease-expo);
   }
 
   .button:active {
@@ -75,40 +102,43 @@ const {
   }
 
   [data-variant='primary'] {
-    background: var(--color-gold);
-    color: var(--color-obsidian);
+    background: var(--action);
+    color: var(--action-fg);
   }
 
-  /* A sheen crosses the primary button as the pointer arrives. */
-  [data-variant='primary']::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(105deg, transparent 30%, var(--glare) 50%, transparent 70%);
-    translate: -110% 0;
-    pointer-events: none;
+  [data-variant='primary']::before {
+    background: color-mix(in oklab, var(--action) 78%, var(--action-fg));
   }
 
   [data-variant='secondary'] {
-    border-color: var(--color-sage);
+    border-color: var(--line-strong);
     background: transparent;
-    color: var(--color-cream);
+    color: var(--fg);
+  }
+
+  [data-variant='secondary']::before {
+    background: var(--fg);
   }
 
   @media (hover: hover) {
-    [data-variant='primary']:hover {
-      background: var(--gold-bright);
+    .button:hover::before {
+      scale: 1 1;
     }
 
-    [data-variant='primary']:hover::after {
-      translate: 110% 0;
-      transition: translate var(--dur-follow) var(--ease-out);
+    .button:hover :global(.arrow) {
+      translate: var(--space-1) 0;
     }
 
     [data-variant='secondary']:hover {
-      border-color: var(--color-gold);
-      background: var(--wash);
+      border-color: var(--fg);
+      color: var(--bg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button::before,
+    .button :global(.arrow) {
+      transition: none;
     }
   }
 </style>

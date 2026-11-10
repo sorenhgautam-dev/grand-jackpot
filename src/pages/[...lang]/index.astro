@@ -7,6 +7,7 @@ import EventList from '../../components/EventList.astro';
 import Hero from '../../components/Hero.astro';
 import Marquee from '../../components/Marquee.astro';
 import HoursTable from '../../components/HoursTable.astro';
+import Icon from '../../components/Icon.astro';
 import Photo from '../../components/Photo.astro';
 import Venue from '../../components/Venue.astro';
 import WayIn from '../../components/WayIn.astro';
@@ -40,31 +41,35 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   <Hero locale={locale} />
 
   <section class="tonight wrap section" aria-labelledby="tonight">
-    <div class="aside">
+    <div class="head">
       <h2 id="tonight">{t.home.tonight}</h2>
       <Button href={localePath(locale, '/whats-on/')} variant="secondary">
         {t.common.seeAllEvents}
       </Button>
     </div>
-    <EventList locale={locale} events={events} days={2} limit={3} />
+    <div class="body">
+      <EventList locale={locale} events={events} days={2} limit={3} />
+    </div>
   </section>
 
   <section class="gaming wrap section" aria-labelledby="gaming">
     <Photo
       src={floor}
       alt={t.wayIn.stops[6]?.alt ?? ''}
-      ratio="wide"
+      ratio="landscape"
       sizes="(min-width: 64rem) 55vw, 100vw"
       class="gaming-photo"
-      tilt
     />
     <div class="gaming-text">
       <h2 id="gaming">{t.home.gaming}</h2>
-      <p>{t.home.gamingText}</p>
-      <ul class="game-names">
+      <p class="lede">{t.home.gamingText}</p>
+      <ul class="game-names" data-stagger>
         {games.map((game) => (
           <li>
-            <a href={localePath(locale, `/gaming/${slugOf(game.id)}/`)}>{game.data.title}</a>
+            <a href={localePath(locale, `/gaming/${slugOf(game.id)}/`)}>
+              <span>{game.data.title}</span>
+              <Icon name="arrow" class="go" />
+            </a>
           </li>
         ))}
       </ul>
@@ -77,48 +82,52 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   <Marquee items={games.map((game) => game.data.title)} />
 
   <section class="dining wrap section" aria-labelledby="dining">
-    <div class="aside">
+    <div class="head head-row">
       <h2 id="dining">{t.home.dining}</h2>
       <Button href={localePath(locale, '/dining/')} variant="secondary">
         {t.home.diningLink}
       </Button>
     </div>
-    <div class="venues">
+    <div class="venues" data-stagger>
       {venues.map((venue) => (
         <Venue locale={locale} venue={venue} />
       ))}
     </div>
   </section>
 
-  <section class="packages" data-surface="raised" data-pointer aria-labelledby="packages">
+  <section class="packages" data-surface="umber" aria-labelledby="packages">
     <div class="wrap packages-inner">
       <h2 id="packages">{t.home.packages}</h2>
-      <p>{t.home.packagesText}</p>
-      <Button href={localePath(locale, '/packages/')}>{t.common.seePackages}</Button>
+      <div class="packages-text">
+        <p class="lede">{t.home.packagesText}</p>
+        <Button href={localePath(locale, '/packages/')}>{t.common.seePackages}</Button>
+      </div>
     </div>
   </section>
 
   <WayIn locale={locale} heading={t.home.wayIn} />
 
   <section class="before wrap section" aria-labelledby="before">
-    <h2 id="before">{t.home.beforeYouGo}</h2>
-    <dl class="reference">
+    <div class="head">
+      <h2 id="before">{t.home.beforeYouGo}</h2>
+    </div>
+    <dl class="reference body" data-stagger>
       <div>
-        <dt>{t.home.hoursLabel}</dt>
+        <dt class="label">{t.home.hoursLabel}</dt>
         <dd>
           <HoursTable locale={locale} />
         </dd>
       </div>
       <div>
-        <dt>{t.home.entryLabel}</dt>
+        <dt class="label">{t.home.entryLabel}</dt>
         <dd>{t.home.entryValue}</dd>
       </div>
       <div>
-        <dt>{t.home.gettingHereLabel}</dt>
+        <dt class="label">{t.home.gettingHereLabel}</dt>
         <dd>{t.home.gettingHereValue}</dd>
       </div>
       <div>
-        <dt>{t.home.addressLabel}</dt>
+        <dt class="label">{t.home.addressLabel}</dt>
         <dd>
           <address>
             {site.hotel}, {site.address.street}, {site.address.locality}
@@ -139,40 +148,70 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 </Base>
 
 <style>
+  /* One rhythm: every section is --section-space tall at each end; light sections that follow
+     one another are divided by a hairline. Content sits on a 12-column grid. */
   .section {
-    padding-block: 4rem;
-    border-top: var(--rule) solid var(--hairline);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-5);
+    row-gap: var(--space-6);
+    padding-block: var(--section-space);
   }
 
-  .tonight {
-    border-top: 0;
+  .section > * {
+    grid-column: 1 / -1;
   }
 
-  .section h2,
-  .packages h2 {
-    margin: 0 0 1rem;
+  .gaming,
+  .before {
+    border-top: var(--rule) solid var(--line);
+  }
+
+  h2 {
+    margin: 0;
     font-size: var(--text-section);
   }
 
-  .aside {
-    margin-bottom: 1.5rem;
-  }
-
-  .gaming {
+  .head {
     display: grid;
-    gap: 2rem;
+    gap: var(--space-5);
+    align-content: start;
+    justify-items: start;
   }
 
-  .gaming-text p {
-    max-width: 44ch;
+  .head-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .lede {
+    max-width: 40ch;
     margin: 0;
+    font-size: var(--text-21);
+    line-height: var(--line-snug);
   }
 
+  .lede:lang(hi) {
+    line-height: 1.6;
+  }
+
+  .gaming-text {
+    display: grid;
+    gap: var(--space-5);
+    align-content: center;
+    justify-items: start;
+  }
+
+  /* The games as an index: a name, and an arrow that slides in when you point at it. */
   .game-names {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.5rem;
-    margin: 1.5rem 0 2rem;
+    column-gap: var(--space-5);
+    width: 100%;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -180,102 +219,64 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   .game-names a {
     display: flex;
     align-items: center;
-    min-height: var(--tap);
-    border-bottom: var(--rule) solid var(--hairline);
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: calc(var(--tap) + var(--space-2));
+    border-bottom: var(--rule) solid var(--line);
     font-family: var(--font-display);
     font-size: var(--text-21);
-    font-weight: 600;
+    line-height: var(--line-tight);
     text-decoration: none;
+  }
+
+  .game-names a span {
+    transition: translate var(--dur-hover) var(--ease-expo);
+  }
+
+  .game-names :global(.go) {
+    flex: none;
+    width: 1.125rem;
+    color: var(--accent-strong);
+    opacity: 0;
+    translate: calc(-1 * var(--space-3)) 0;
+    transition:
+      opacity var(--dur-hover) var(--ease-expo),
+      translate var(--dur-hover) var(--ease-expo);
   }
 
   .venues {
     display: grid;
-    gap: 3rem;
+    gap: var(--space-7);
   }
 
   .packages {
-    view-timeline: --packages block;
-    position: relative;
-    isolation: isolate;
-    overflow: clip;
-    padding-block: 4rem;
+    padding-block: var(--section-space);
   }
 
-  /* A card-back lattice in faint gold, fading out toward the words. */
-  .packages::before {
-    content: '';
-    position: absolute;
-    inset: -8% 0;
-    z-index: -1;
-    background:
-      repeating-linear-gradient(45deg, var(--lattice) 0 1px, transparent 1px 2rem),
-      repeating-linear-gradient(-45deg, var(--lattice) 0 1px, transparent 1px 2rem);
-    mask: linear-gradient(to left, var(--color-obsidian) 10%, transparent 80%);
-    pointer-events: none;
+  .packages-inner {
+    display: grid;
+    gap: var(--space-5);
   }
 
-  /* A warm light follows the pointer across the lattice. */
-  .packages::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: radial-gradient(
-      circle 26rem at var(--px, 70%) var(--py, 50%),
-      var(--glow),
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity var(--dur-follow) var(--ease-out);
-    pointer-events: none;
-  }
-
-  .packages[data-pointing]::after {
-    opacity: 0.4;
-  }
-
-  @keyframes lattice-drift {
-    from {
-      translate: 0 -6%;
-    }
-
-    to {
-      translate: 0 6%;
-    }
-  }
-
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .packages::before {
-        animation: lattice-drift linear both;
-        animation-timeline: --packages;
-        animation-range: cover;
-      }
-    }
-  }
-
-  .packages-inner p {
-    max-width: 52ch;
-    margin: 0 0 2rem;
-    font-size: var(--text-21);
-    line-height: var(--line-snug);
+  .packages-text {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
   }
 
   .reference {
-    display: grid;
-    gap: 0;
     margin: 0;
   }
 
   .reference > div {
     display: grid;
-    gap: 0.25rem;
-    padding-block: 1rem;
-    border-top: var(--rule) solid var(--hairline);
+    gap: var(--space-2);
+    padding-block: var(--space-5);
+    border-top: var(--rule) solid var(--line);
   }
 
   dt {
-    font-weight: 600;
+    color: var(--fg-muted);
   }
 
   dd {
@@ -288,65 +289,69 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   }
 
   dd :global(.directions) {
-    margin-top: 0.75rem;
+    margin-top: var(--space-4);
   }
 
   @media (hover: hover) {
-    .game-names a:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 0.2em;
+    .game-names a:hover span {
+      translate: var(--space-2) 0;
+    }
+
+    .game-names a:hover :global(.go) {
+      opacity: 1;
+      translate: 0 0;
     }
   }
 
   @media (width >= 48rem) {
     .venues {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 2rem;
+      gap: var(--space-6);
     }
 
     .reference > div {
       grid-template-columns: 12rem minmax(0, 1fr);
-      gap: 2rem;
+      gap: var(--space-6);
     }
   }
 
   @media (width >= 64rem) {
-    .section {
-      padding-block: 6rem;
+    .tonight .head,
+    .before .head {
+      grid-column: 1 / span 4;
     }
 
-    .tonight,
-    .dining,
-    .before {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-      gap: 3rem;
+    .tonight .body,
+    .before .body {
+      grid-column: 6 / -1;
     }
 
     .gaming {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      gap: 4rem;
       align-items: center;
     }
 
-    .packages {
-      padding-block: 6rem;
+    .gaming :global(.gaming-photo) {
+      grid-column: 1 / span 7;
+    }
+
+    .gaming-text {
+      grid-column: 9 / -1;
     }
 
     .packages-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-      gap: 0 3rem;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--space-5);
+      align-items: end;
     }
 
-    .packages-inner p {
-      margin-top: 0.5rem;
+    .packages-inner h2 {
+      grid-column: 1 / span 5;
+      font-size: var(--text-96);
+      line-height: var(--line-display);
     }
 
-    .packages-inner :global(.button) {
-      grid-column: 2;
-      justify-self: start;
+    .packages-text {
+      grid-column: 7 / -1;
     }
   }
 </style>

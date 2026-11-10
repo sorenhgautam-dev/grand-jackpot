@@ -16,8 +16,6 @@ interface Props {
   /** Focal point for the crop, as an `object-position` value. */
   position?: string;
   transitionName?: string | undefined;
-  /** Tilts toward a mouse pointer, with a sheen where the pointer is. */
-  tilt?: boolean | undefined;
   class?: string | undefined;
 }
 
@@ -29,7 +27,6 @@ const {
   priority = false,
   position = 'center',
   transitionName,
-  tilt = false,
   class: className,
 } = Astro.props;
 
@@ -47,7 +44,6 @@ const style = [
   class:list={['photo', className]}
   data-ratio={ratio}
   data-priority={priority ? '' : undefined}
-  data-tilt={tilt ? '' : undefined}
   style={style}
 >
   <Picture
@@ -73,7 +69,7 @@ const style = [
     position: relative;
     overflow: hidden;
     border-radius: var(--radius-media);
-    background: var(--ground);
+    background: var(--surface);
   }
 
   .photo[data-ratio='wide'] {

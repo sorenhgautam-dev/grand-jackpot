@@ -1,11 +1,13 @@
 /*
- * Motion that belongs to no single component: the gold cursor, tilting photographs,
- * the scroll thread and the scroll-driven reveals. Everything here is decoration over
- * content that is already visible; with reduced motion, or in browsers without
- * scroll-driven animations, the page simply stands still.
+ * Motion that belongs to no single component: the cursor and the reveals.
+ *
+ * Reveals are time-based, not tied to the scroll position: scripts/motion.ts marks an element
+ * [data-reveal] only once JavaScript is running, and [data-in] when it first enters the window,
+ * so the animation always plays through and never stops half-faded. Without JavaScript, with
+ * reduced motion, or before the script runs, everything is simply there.
  */
 
-/* ---------- The gold cursor (fine pointers; injected by scripts/motion.ts) ---------- */
+/* ---------- Cursor: a dot that inverts whatever it is over (fine pointers only) ---------- */
 
 html[data-cursor]:not(:has(dialog[open])),
 html[data-cursor]:not(:has(dialog[open])) * {
@@ -23,8 +25,10 @@ html[data-cursor]:not(:has(dialog[open]))
   left: 0;
   z-index: 40;
   pointer-events: none;
+  mix-blend-mode: difference;
   opacity: 0;
   transition: opacity var(--dur-quick) var(--ease-out);
+  will-change: transform;
 }
 
 .cursor[data-visible] {
@@ -35,185 +39,94 @@ html:has(dialog[open]) .cursor {
   display: none;
 }
 
-.cursor-lag,
-.cursor-pin {
-  position: absolute;
-  top: 0;
-  left: 0;
-  will-change: transform;
-}
-
-/* A thin gold ring that trails the pointer, and a dot that sits on it. */
-.cursor-ring {
-  position: absolute;
-  width: var(--cursor-size);
-  height: var(--cursor-size);
-  margin: calc(var(--cursor-size) / -2);
-  border: 1.5px solid var(--color-gold);
-  border-radius: 50%;
-  transition:
-    scale var(--dur-base) var(--ease-out),
-    background-color var(--dur-base) var(--ease-out),
-    opacity var(--dur-quick) var(--ease-out);
-}
-
 .cursor-dot {
-  position: absolute;
+  display: block;
   width: var(--cursor-dot);
   height: var(--cursor-dot);
   margin: calc(var(--cursor-dot) / -2);
-  border-radius: 50%;
-  background: var(--color-gold);
-  transition:
-    scale var(--dur-quick) var(--ease-out),
-    opacity var(--dur-quick) var(--ease-out);
-}
-
-.cursor[data-state='link'] .cursor-ring {
-  scale: var(--cursor-grow);
-  background: var(--wash);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper);
+  transition: scale var(--dur-hover) var(--ease-expo);
 }
 
 .cursor[data-state='link'] .cursor-dot {
-  scale: 0;
+  scale: var(--cursor-grow);
 }
 
-.cursor[data-down] .cursor-ring {
-  scale: 0.8;
+.cursor[data-down] .cursor-dot {
+  scale: 0.7;
 }
 
-.cursor[data-state='link'][data-down] .cursor-ring {
+.cursor[data-state='link'][data-down] .cursor-dot {
   scale: calc(var(--cursor-grow) * 0.85);
 }
 
-.cursor[data-state='text'] :is(.cursor-ring, .cursor-dot) {
-  opacity: 0;
+.cursor[data-state='text'] .cursor-dot {
+  scale: 0;
 }
 
-/* ---------- Tilting photographs (data-tilt; scripts/motion.ts sets the angles) ---------- */
+/* ---------- Reveals ---------- */
 
-[data-tilt] {
-  transform: perspective(var(--perspective)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform var(--dur-tilt) var(--ease-out);
-}
-
-[data-tilt][data-tilting] {
-  transition-duration: var(--dur-quick);
-}
-
-[data-tilt]::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at var(--gx, 50%) var(--gy, 50%),
-    var(--glare),
-    transparent 55%
-  );
-  mix-blend-mode: soft-light;
-  opacity: 0;
-  transition: opacity var(--dur-tilt) var(--ease-out);
-  pointer-events: none;
-}
-
-[data-tilt][data-tilting]::after {
-  opacity: 1;
-}
-
-/* Page titles start a hair above transparent, so the browser counts them as painted at once
-   and the largest contentful paint isn't held back by the animation. */
-@keyframes rise-in {
-  from {
-    opacity: 0.01;
-    translate: 0 0.6em;
-  }
-}
-
-/* ---------- Scroll-driven ---------- */
-
-@keyframes progress {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-/* Photographs open like a curtain as they arrive, and drift inside their frame. */
-@keyframes curtain {
-  from {
-    clip-path: inset(24% 8% 0 8% round var(--radius-media));
+@media (prefers-reduced-motion: no-preference) {
+  /* Headings rise out from behind their own bottom edge. */
+  [data-reveal='heading'] {
+    clip-path: inset(100% -0.5em -0.5em -0.5em);
+    translate: 0 0.35em;
+    transition:
+      clip-path var(--dur-reveal) var(--ease-expo),
+      translate var(--dur-reveal) var(--ease-expo);
   }
 
-  to {
-    clip-path: inset(0 round var(--radius-media));
-  }
-}
-
-@keyframes drift {
-  from {
-    scale: 1.14;
-    translate: 0 -5%;
+  [data-reveal='heading'][data-in] {
+    clip-path: inset(-0.5em);
+    translate: 0 0;
   }
 
-  to {
-    scale: 1.14;
-    translate: 0 5%;
+  /* Photographs open from the bottom while the picture settles from a slight zoom. */
+  [data-reveal='photo'] {
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path var(--dur-reveal-photo) var(--ease-expo);
   }
-}
 
-/* Headings rise a little and fade in as they scroll in; flat, so the type never warps. */
-@keyframes heading-in {
-  from {
+  [data-reveal='photo'] img {
+    scale: var(--reveal-zoom);
+    transition: scale calc(var(--dur-reveal-photo) * 1.3) var(--ease-expo);
+  }
+
+  [data-reveal='photo'][data-in] {
+    clip-path: inset(0);
+  }
+
+  [data-reveal='photo'][data-in] img {
+    scale: 1;
+  }
+
+  /* Rows of a list arrive one after another. */
+  [data-reveal='item'] {
     opacity: 0;
-    translate: 0 0.4em;
+    translate: 0 var(--reveal-rise);
+    transition:
+      opacity var(--dur-reveal) var(--ease-expo),
+      translate var(--dur-reveal) var(--ease-expo);
+    transition-delay: var(--delay, 0ms);
+  }
+
+  [data-reveal='item'][data-in] {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      right: 0;
-      left: 0;
-      z-index: 30;
-      height: var(--progress-height);
-      background: var(--color-gold);
-      transform-origin: 0 50%;
-      animation: progress linear both;
-      animation-timeline: scroll(root block);
-      pointer-events: none;
-    }
+/* ---------- Hover: photographs that link somewhere lean in a little ---------- */
 
-    .photo[data-ratio]:not([data-priority]) {
-      animation: curtain linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 90%;
-    }
-
-    .photo[data-ratio] img {
-      animation: drift linear both;
-      animation-timeline: view();
-      animation-range: cover;
-    }
-
-    /* The lightbox measures its thumbnails, so they keep still. */
-    [data-gallery] .photo[data-ratio] img {
-      animation: none;
-    }
-
-    main h2 {
-      animation: heading-in linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 70%;
-    }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :is(a, [data-link-zone]):hover .photo[data-ratio] img {
+    scale: var(--hover-zoom);
+    transition: scale var(--dur-hover) var(--ease-expo);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-tilt],
-  [data-tilt]::after,
-  .cursor-ring,
   .cursor-dot {
     transition: none;
   }

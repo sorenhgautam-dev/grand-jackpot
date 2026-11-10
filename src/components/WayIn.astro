@@ -107,7 +107,7 @@ const name = `way-in-${locale}`;
     gap: 1rem;
     align-items: start;
     padding-block: 1.25rem;
-    border-top: var(--rule) solid var(--hairline);
+    border-top: var(--rule) solid var(--line);
   }
 
   label {
@@ -167,7 +167,7 @@ const name = `way-in-${locale}`;
       position: relative;
       min-height: var(--tap);
       padding: 0.875rem 0 0.875rem 1.25rem;
-      border-top: var(--rule) solid var(--hairline);
+      border-top: var(--rule) solid var(--line);
       cursor: pointer;
     }
 
@@ -176,7 +176,7 @@ const name = `way-in-${locale}`;
       position: absolute;
       inset: -1px auto 0 0;
       width: 2px;
-      background: var(--color-gold);
+      background: var(--accent-strong);
       transform: scaleY(0);
       transform-origin: top;
       transition: transform var(--dur-base) var(--ease-out);
@@ -199,19 +199,26 @@ const name = `way-in-${locale}`;
       top: 0;
       right: 0;
       width: calc(50% - 1.5rem);
-      opacity: 0;
-      transform: perspective(var(--perspective)) translateX(6%) rotateY(-28deg) scale(0.94);
-      transform-origin: 0 50%;
-      transition:
-        opacity var(--dur-base) var(--ease-out),
-        transform var(--dur-door) var(--ease-out);
+      clip-path: inset(0 0 0 100%);
+      /* The outgoing photograph stays until the new one has covered it. */
+      transition: clip-path 0s linear var(--dur-reveal);
       pointer-events: none;
     }
 
-    /* Choosing a stop swings its photograph open in the frame, like a door. */
+    .stop :global(.stage img) {
+      scale: var(--reveal-zoom);
+      transition: scale var(--dur-reveal-photo) var(--ease-expo);
+    }
+
+    /* Choosing a stop wipes its photograph in over the last one, settling from a slight zoom. */
     .stop:has(input:checked) :global(.stage) {
-      opacity: 1;
-      transform: none;
+      z-index: 1;
+      clip-path: inset(0);
+      transition: clip-path var(--dur-reveal) var(--ease-expo);
+    }
+
+    .stop:has(input:checked) :global(.stage img) {
+      scale: 1;
     }
 
     /* Reserves the frame's height in the second column. */
@@ -264,9 +271,9 @@ const name = `way-in-${locale}`;
 
   @media (prefers-reduced-motion: reduce) {
     label::before,
-    .stop :global(.stage) {
-      transform: none;
-      transition-duration: var(--dur-quick);
+    .stop :global(.stage),
+    .stop :global(.stage img) {
+      transition: none;
     }
   }
 </style>

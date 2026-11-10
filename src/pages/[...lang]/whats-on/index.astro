@@ -127,7 +127,7 @@ const types = [...new Set(events.map((event) => event.data.type))];
     align-items: center;
     min-height: var(--tap);
     padding: 0 1.125rem;
-    border: var(--rule) solid var(--color-sage);
+    border: var(--rule) solid var(--line-strong);
     border-radius: var(--radius-pill);
     font-size: var(--text-16);
     cursor: pointer;
@@ -138,8 +138,8 @@ const types = [...new Set(events.map((event) => event.data.type))];
   }
 
   .chip input:checked + label {
-    background: var(--color-gold);
-    color: var(--color-obsidian);
+    background: var(--action);
+    color: var(--action-fg);
   }
 
   .chip input:focus-visible + label {
@@ -153,7 +153,7 @@ const types = [...new Set(events.map((event) => event.data.type))];
 
   @media (hover: hover) {
     .chip input:not(:checked):hover + label {
-      background: var(--ground);
+      background: var(--wash);
     }
   }
 

@@ -1,32 +1,86 @@
-:root {
-  /* State shades, grounds and rules, derived from the named colours. */
-  --gold-bright: color-mix(in oklab, var(--color-gold) 80%, var(--color-cream));
-  /* Behind photographs while they load. */
-  --ground: var(--color-emerald);
-  /* Dividers: cream at 10%, quiet on both obsidian and emerald. */
-  --hairline: color-mix(in oklab, var(--color-cream) 10%, transparent);
-  /* A ghost control's fill on hover. */
-  --wash: color-mix(in oklab, var(--color-cream) 8%, transparent);
-  /* The packages lattice. */
-  --lattice: color-mix(in oklab, var(--color-gold) 16%, transparent);
+/*
+ * Surfaces. Light is the default; dark and umber are bands. Each sets the same roles, and
+ * components use only the roles, so any component sits on any surface.
+ *   --bg, --surface        ground, and cards or fields on it
+ *   --fg, --fg-muted       text, and secondary text (both AA at small sizes)
+ *   --line, --line-strong  dividers, and control borders (3:1 or more)
+ *   --accent               decoration; --accent-strong where it must be seen (3:1 or more)
+ *   --action, --action-fg  the primary button
+ */
+:root,
+[data-surface='light'] {
+  --bg: var(--color-paper);
+  --surface: color-mix(in oklab, var(--color-stone) 26%, var(--color-paper));
+  --fg: var(--color-charcoal);
+  /* Grey darkened toward charcoal: 7.0 on paper, where plain grey would be 4.3. */
+  --fg-muted: color-mix(in oklab, var(--color-grey) 62%, var(--color-charcoal));
+  --line: color-mix(in oklab, var(--color-charcoal) 13%, transparent);
+  --line-strong: var(--color-grey);
+  --accent: var(--color-gold);
+  --accent-strong: var(--color-umber);
+  --focus: var(--color-charcoal);
+  --action: var(--color-charcoal);
+  --action-fg: var(--color-paper);
+  --alert: var(--color-alert);
+  --wash: color-mix(in oklab, var(--color-charcoal) 6%, transparent);
+}
+
+[data-surface='dark'] {
+  --bg: var(--color-ink);
+  --surface: var(--color-charcoal);
+  --fg: var(--color-paper);
+  --fg-muted: var(--color-stone);
+  --line: color-mix(in oklab, var(--color-paper) 14%, transparent);
+  --line-strong: var(--color-grey);
+  --accent: var(--color-gold);
+  --accent-strong: var(--color-gold);
   --focus: var(--color-gold);
-  /* Light: the warm spotlight under the cursor, and the sheen across a tilted photo. */
-  --glow: color-mix(in oklab, var(--color-gold) 50%, transparent);
-  --glare: color-mix(in oklab, var(--color-cream) 42%, transparent);
+  --action: var(--color-gold);
+  --action-fg: var(--color-ink);
+  --alert: var(--color-alert-light);
+  --wash: color-mix(in oklab, var(--color-paper) 8%, transparent);
+}
+
+[data-surface='umber'] {
+  --bg: var(--color-umber);
+  --surface: color-mix(in oklab, var(--color-umber) 72%, var(--color-ink));
+  --fg: var(--color-paper);
+  --fg-muted: var(--color-stone);
+  --line: color-mix(in oklab, var(--color-paper) 18%, transparent);
+  --line-strong: var(--color-stone);
+  --accent: var(--color-gold);
+  --accent-strong: var(--color-gold);
+  --focus: var(--color-paper);
+  --action: var(--color-paper);
+  --action-fg: var(--color-charcoal);
+  --alert: var(--color-paper);
+  --wash: color-mix(in oklab, var(--color-paper) 10%, transparent);
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--color-obsidian);
-    color: var(--color-cream);
+    background: var(--bg);
+    color: var(--fg);
     font-family: var(--font-body);
     font-size: var(--root-size);
     line-height: var(--line-body);
+    /* Each display face ships one weight: never fake a bold or an italic. */
+    font-synthesis: none;
     scroll-padding-top: calc(var(--header-height) + 1rem);
+  }
+
+  [data-surface] {
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  [data-surface='dark'],
+  [data-surface='umber'] {
+    color-scheme: dark;
   }
 
   :lang(hi) {
@@ -48,12 +102,13 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     line-height: var(--line-tight);
     text-wrap: balance;
     letter-spacing: -0.01em;
   }
 
+  /* Devanagari needs room above and below for its marks. */
   :is(h1, h2, h3):lang(hi) {
     line-height: var(--line-snug);
     letter-spacing: 0;
@@ -76,7 +131,7 @@
 
   @media (hover: hover) {
     a:hover {
-      text-decoration-color: var(--color-gold);
+      text-decoration-color: var(--accent-strong);
     }
   }
 
@@ -93,13 +148,23 @@
     outline-offset: 2px;
   }
 
-  [data-surface='raised'] {
-    background: var(--color-emerald);
-  }
-
   ::selection {
-    background: var(--color-gold);
-    color: var(--color-obsidian);
+    background: var(--color-charcoal);
+    color: var(--color-paper);
+  }
+}
+
+/* Small uppercase labels for navigation and meta (dates, field names). Devanagari has no
+   case, so on Hindi pages the label only changes size and weight. */
+@utility label {
+  font-size: var(--text-label);
+  font-weight: 600;
+  line-height: var(--line-snug);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+
+  &:lang(hi) {
+    letter-spacing: 0;
   }
 }
 
