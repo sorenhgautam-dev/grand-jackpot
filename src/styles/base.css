@@ -24,7 +24,7 @@
     background: var(--color-obsidian);
     color: var(--color-cream);
     font-family: var(--font-body);
-    font-size: 100%;
+    font-size: var(--root-size);
     line-height: var(--line-body);
     scroll-padding-top: calc(var(--header-height) + 1rem);
   }

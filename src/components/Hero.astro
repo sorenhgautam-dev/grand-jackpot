@@ -233,11 +233,8 @@ const words = site.name.split(' ').map((word) => [...word].map((char) => ({ char
     gap: 0.75rem;
   }
 
+  /* The entrance fills the whole first screen at every width. */
   @media (width >= 48rem) {
-    .hero {
-      min-height: max(36rem, min(100svh, 56.25vw));
-    }
-
     .photo img {
       object-position: center;
     }
