@@ -37,17 +37,21 @@ const {
   jsonLd,
 } = Astro.props;
 const t = strings(locale);
-// Headings use Rozha One; the hero and wordmarks use Archivo Black (Latin only).
-// Hindi pages also need Rozha's and Mukta's Devanagari.
+// Preload every face a page sets text in, so no font is discovered late (after layout), which
+// would put its download on the critical path. Rozha One sets the headings; Archivo Black the
+// home page's giant English words; Mukta the text. Hindi pages need each face's Devanagari too.
 const rozhaPreloads =
   locale === 'hi' ? [{ subset: 'latin' }, { subset: 'devanagari' }] : [{ subset: 'latin' }];
-const muktaPreloads =
-  locale === 'hi'
+const muktaPreloads = [
+  { subset: 'latin', weight: '400' },
+  { subset: 'latin', weight: '600' },
+  ...(locale === 'hi'
     ? [
         { subset: 'devanagari', weight: '400' },
         { subset: 'devanagari', weight: '600' },
       ]
-    : [{ subset: 'latin', weight: '400' }];
+    : []),
+];
 // Pages with no counterpart in the other language switch to its home page.
 const languagePath = indexable ? path : '/';
 const fullTitle = home ? title : `${title} | ${site.name}`;

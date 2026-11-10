@@ -35,9 +35,11 @@ Deploy `dist/` to Vercel, Netlify or Cloudflare Pages with `npm run build` as th
 - `src/data/site.ts`: facts used by code (name, address, phones, timezone, opening hours).
 - `src/i18n/en.ts`, `src/i18n/hi.ts`: interface copy. Hindi is typed against English, so a missing string fails the build.
 - `src/content/`: games, events, dining venues, packages, FAQs, and the About, Privacy and Responsible gaming pages, one file per language.
-- `src/styles/tokens.css`: colours, type scale, radii, motion. A dark casino palette: obsidian page, emerald cards and panels, muted gold for accents and the main action, cream text and sage secondary text. Every photograph has the same 12px frame.
+- `src/styles/tokens.css`: colours, type, spacing, motion. The client's two palettes: light sections (#FDFDFD, #231F1E, #7B7979, #AE9F73) and dark bands (#0A0C0E, #FDFDFD, #C5C4C2, #59432D). Rozha One for headings, Archivo Black for the giant English words, Mukta for text. Photographs, cards and buttons are sharp rectangles.
+- `src/styles/base.css`: the light, dark and umber surfaces. Each sets the same roles (`--bg`, `--fg`, `--fg-muted`, `--line`, `--accent`, `--action`), and components use only the roles.
+- `src/components/Hero.astro`: the name set as the picture, over an inset photograph of the entrance.
 - `src/components/WayIn.astro`: the signature, the route from the hotel gate to the gaming floor in seven photographs. It works without JavaScript.
-- `src/styles/motion.css`, `src/scripts/motion.ts`: the cursor, tilting photographs and scroll-driven motion. All of it is decoration; with reduced motion, or in browsers without scroll-driven animations, the page stands still.
+- `src/styles/motion.css`, `src/scripts/motion.ts`: the cursor and the reveals. Headings, photographs and list rows play their entrance once, when they first come into view. With reduced motion, or without JavaScript, everything is simply there.
 
 There is no sample content: events, packages and games are the casino's own. The Hindi translations were drafted for the demo and need review by a native speaker.
 

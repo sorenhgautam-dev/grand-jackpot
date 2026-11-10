@@ -69,25 +69,34 @@ const href = localePath(locale, `/gaming/${slug}/`);
     margin: 0.5rem 0 0.75rem;
   }
 
-  /* Looks like a ghost button; the whole row is the link. */
+  /* Drawn like a secondary button; the whole row is the link. */
   .more {
     display: inline-flex;
     align-items: center;
-    min-height: 2.25rem;
-    padding: 0.25rem 1rem;
+    min-height: calc(var(--tap) + var(--space-1));
+    padding: var(--space-2) var(--space-5);
     border: var(--rule) solid var(--line-strong);
     border-radius: var(--radius-control);
-    font-size: var(--text-16);
+    font-size: var(--text-label);
     font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
     transition:
-      border-color var(--dur-base) var(--ease-out),
-      background-color var(--dur-base) var(--ease-out);
+      border-color var(--dur-hover) var(--ease-expo),
+      background-color var(--dur-hover) var(--ease-expo),
+      color var(--dur-hover) var(--ease-expo);
+  }
+
+  .more:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
   }
 
   @media (hover: hover) {
     .game:hover .more {
-      border-color: var(--accent-strong);
-      background: var(--wash);
+      border-color: var(--fg);
+      background: var(--fg);
+      color: var(--bg);
     }
 
     .game:hover h3 a {

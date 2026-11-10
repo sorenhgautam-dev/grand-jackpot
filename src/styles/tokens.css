@@ -136,7 +136,7 @@
   --text-label: var(--text-14);
   --text-section: var(--text-36);
   --text-page: var(--text-48);
-  --text-hero: clamp(4.25rem, 19vw, 8rem);
+  --text-hero: clamp(4.25rem, 21vw, 8rem);
 }
 
 @media (width >= 48rem) {

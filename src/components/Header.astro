@@ -73,9 +73,7 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
     inset: 0;
     z-index: -1;
     border-bottom: var(--rule) solid var(--line);
-    background: color-mix(in oklab, var(--bg) 86%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
+    background: var(--bg);
     opacity: 1;
     transition: opacity var(--dur-quick) var(--ease-out);
   }
