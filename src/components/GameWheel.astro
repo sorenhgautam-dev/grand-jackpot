@@ -7,6 +7,8 @@ import Button from './Button.astro';
 /**
  * "Can't decide?": a wheel with one wedge per game. Spinning it picks a game and shows what it
  * is and where to learn it. No stakes, no score: it is a way into the game pages.
+ * Lamps run round the rim, the pointer clicks over each wedge as it passes, and when the
+ * wheel stops the chosen wedge lights up and marigold petals fly from the pointer.
  */
 interface Props {
   locale: Locale;
@@ -25,6 +27,12 @@ const wedges = games.map((game, index) => ({
   mid: index * step + step / 2,
   label: game.data.title.split(' (')[0],
 }));
+/* Twenty-four lamps on a fixed ring outside the wheel, half a step off the top so the
+   pointer never covers one. */
+const lamps = Array.from({ length: 24 }, (_, index) => {
+  const [x, y] = point(index * 15 + 7.5, 108).split(' ');
+  return { x, y };
+});
 const items = games.map((game) => ({
   title: game.data.title,
   summary: game.data.summary,
@@ -34,9 +42,15 @@ const items = games.map((game) => ({
 
 <div class="wheel" data-wheel={JSON.stringify(items)} data-again={t.home.spinAgain}>
   <svg viewBox="-112 -116 224 232" aria-hidden="true" focusable="false">
+    <circle class="frame" r="108" />
+    <g class="lamps">
+      {lamps.map((lamp) => (
+        <circle class="lamp" cx={lamp.x} cy={lamp.y} r="2.6" />
+      ))}
+    </g>
     <g class="rotor" data-rotor>
       {wedges.map((wedge, index) => (
-        <g>
+        <g data-wedge={index}>
           <path class="wedge" data-red={index % 2 ? undefined : ''} d={wedge.d} />
           <text transform={`rotate(${wedge.mid}) translate(0 -64) rotate(-90)`}>{wedge.label}</text>
         </g>
@@ -50,7 +64,9 @@ const items = games.map((game) => ({
   <div class="words">
     <h3>{t.home.wheelTitle}</h3>
     <p class="hint">{t.home.wheelText}</p>
-    <Button type="button" data-spin>{t.home.spin}</Button>
+    <Button type="button" data-spin>
+      {t.home.spin}
+    </Button>
     <div class="result" aria-live="polite">
       <p class="picked" data-name></p>
       <p class="summary" data-summary></p>
@@ -62,6 +78,8 @@ const items = games.map((game) => ({
 </div>
 
 <script>
+  import { scatter } from '../scripts/petals';
+
   interface Item {
     title: string;
     summary: string;
@@ -77,11 +95,29 @@ const items = games.map((game) => ({
     const name = root.querySelector<HTMLElement>('[data-name]');
     const summary = root.querySelector<HTMLElement>('[data-summary]');
     const link = root.querySelector<HTMLAnchorElement>('[data-link]');
+    const pointer = root.querySelector<SVGPathElement>('.pointer');
     if (!rotor || !button || !name || !summary || !link || items.length === 0) continue;
 
     const step = 360 / items.length;
     let turn = 0;
     let spinning = false;
+    let sector = -1;
+
+    /* While the wheel turns, flick the pointer each time a wedge's edge passes under it. */
+    const tick = (): void => {
+      if (!spinning) return;
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(rotor).transform);
+      const angle = ((Math.atan2(matrix.b, matrix.a) * 180) / Math.PI + 360) % 360;
+      const now = Math.floor(angle / step);
+      if (now !== sector) {
+        sector = now;
+        pointer?.animate([{ rotate: '-26deg' }, { rotate: '0deg' }], {
+          duration: 240,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        });
+      }
+      requestAnimationFrame(tick);
+    };
 
     button.addEventListener('click', () => {
       if (spinning) return;
@@ -93,7 +129,12 @@ const items = games.map((game) => ({
       spinning = true;
       button.setAttribute('aria-disabled', 'true');
       root.removeAttribute('data-landed');
+      root.querySelector('[data-chosen]')?.removeAttribute('data-chosen');
       rotor.style.setProperty('--turn', `${turn}deg`);
+      if (!reduce) {
+        root.dataset.spinning = '';
+        requestAnimationFrame(tick);
+      }
       setTimeout(
         () => {
           name.textContent = item.title;
@@ -101,7 +142,13 @@ const items = games.map((game) => ({
           link.href = item.href;
           link.hidden = false;
           root.dataset.landed = '';
+          delete root.dataset.spinning;
+          root.querySelector(`[data-wedge="${index}"]`)?.setAttribute('data-chosen', '');
           spinning = false;
+          if (!reduce && pointer) {
+            const box = pointer.getBoundingClientRect();
+            scatter(box.left + box.width / 2, box.bottom, 16, 90);
+          }
           button.removeAttribute('aria-disabled');
           const label = button.querySelector('.text');
           if (label && root.dataset.again) label.textContent = root.dataset.again;
@@ -136,10 +183,65 @@ const items = games.map((game) => ({
     fill: var(--color-ink);
     stroke: var(--color-gold-light);
     stroke-width: 0.6;
+    transition: fill 400ms var(--ease-out);
   }
 
   .wedge[data-red] {
     fill: var(--color-crimson);
+  }
+
+  /* The chosen wedge lights up gold once the wheel stops. */
+  [data-chosen] .wedge {
+    fill: var(--color-gold-light);
+  }
+
+  [data-chosen] text {
+    fill: var(--color-ink);
+  }
+
+  .frame {
+    fill: none;
+    stroke: color-mix(in oklab, var(--color-gold-light) 45%, var(--color-felt-deep));
+    stroke-width: 7;
+  }
+
+  .lamp {
+    fill: #fff3c4;
+  }
+
+  /* The lamps chase round the rim: slowly while the wheel waits, fast while it spins. */
+  @keyframes chase {
+    50% {
+      opacity: 0.28;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lamp {
+      animation: chase 1.4s steps(1) infinite;
+    }
+
+    .lamp:nth-child(odd) {
+      animation-delay: -0.7s;
+    }
+
+    .wheel[data-spinning] .lamp {
+      animation-duration: 0.22s;
+    }
+
+    .wheel[data-spinning] .lamp:nth-child(odd) {
+      animation-delay: -0.11s;
+    }
+
+    .wheel[data-landed] [data-chosen] .wedge {
+      animation: glow 900ms var(--ease-out) 3;
+    }
+  }
+
+  @keyframes glow {
+    50% {
+      fill: #fff3c4;
+    }
   }
 
   text {
@@ -171,6 +273,9 @@ const items = games.map((game) => ({
   .pointer {
     stroke: var(--color-ink);
     stroke-width: 1;
+    /* It swings from its base, like the clapper on a wheel of fortune. */
+    transform-box: fill-box;
+    transform-origin: 50% 0;
   }
 
   .words {

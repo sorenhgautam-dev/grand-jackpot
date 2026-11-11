@@ -1,0 +1,169 @@
+---
+/**
+ * Marigold garlands (sayapatri), swagged along the top of a band the way doorways and
+ * courtyards in Kathmandu are dressed for Tihar, the festival of lights. A short strand
+ * ending in a mango leaf hangs from each knot. The swags breathe and the strands swing.
+ * Decorative. The parent must be positioned; the garland sits along its top edge.
+ */
+interface Props {
+  /** How many swags across the band. */
+  swags?: number;
+}
+
+const { swags = 6 } = Astro.props;
+const width = 1200;
+const top = 6;
+const sag = 34;
+const span = width / swags;
+const perSwag = 12;
+const colours = ['#f2851d', '#f7a928', '#e0601b', '#f4c430'];
+
+/* A steady wobble in size and colour, so the flowers look strung by hand, not stamped. */
+const wobble = (index: number) => ((index * 37) % 7) / 7;
+const flower = (x: number, y: number, index: number, scale = 1) => ({
+  x: +x.toFixed(1),
+  y: +y.toFixed(1),
+  r: +((7.2 + wobble(index) * 1.8) * scale).toFixed(2),
+  fill: colours[(index * 3 + (index >> 1)) % colours.length],
+});
+
+const swagList = Array.from({ length: swags }, (_, s) => {
+  const x1 = s * span;
+  const cx = x1 + span / 2;
+  const cy = top + 2 * sag;
+  const flowers = Array.from({ length: perSwag - 1 }, (_, j) => {
+    const t = (j + 1) / perSwag;
+    const x = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * cx + t ** 2 * (x1 + span);
+    const y = (1 - t) ** 2 * top + 2 * (1 - t) * t * cy + t ** 2 * top;
+    return flower(x, y, s * perSwag + j);
+  });
+  return { flowers, style: `--i: ${s}` };
+});
+
+const strands = Array.from({ length: swags + 1 }, (_, k) => {
+  const x = k * span;
+  const length = k % 2 ? 3 : 5;
+  const flowers = Array.from({ length }, (_, j) => flower(0, 14 * (j + 1), k * 11 + j, 0.92));
+  return {
+    x,
+    knot: flower(0, 0, k * 5 + 2, 1.25),
+    flowers,
+    leafY: 14 * length + 6,
+    style: `--i: ${k}; --period: ${(2.8 + (k % 3) * 0.45).toFixed(2)}s`,
+  };
+});
+const height = top + 14 * 5 + 6 + 24;
+---
+
+<svg
+  class="garland"
+  viewBox={`0 0 ${width} ${height}`}
+  preserveAspectRatio="xMidYMin slice"
+  style={`--ratio: ${width} / ${height}`}
+  aria-hidden="true"
+  focusable="false"
+>
+  {swagList.map((swag) => (
+    <g class="swag" style={swag.style}>
+      {swag.flowers.map((f) => (
+        <g class="marigold">
+          <circle cx={f.x} cy={f.y} r={f.r} fill={f.fill} />
+          <circle class="ruffle" cx={f.x} cy={f.y} r={f.r * 0.68} />
+          <circle class="heart" cx={f.x} cy={f.y} r={f.r * 0.28} />
+        </g>
+      ))}
+    </g>
+  ))}
+  {strands.map((strand) => (
+    <g transform={`translate(${strand.x} ${top})`}>
+      <g class="strand" style={strand.style}>
+        <path class="thread" d={`M0 0 V${strand.leafY}`} />
+        {strand.flowers.map((f) => (
+          <g class="marigold">
+            <circle cx={f.x} cy={f.y} r={f.r} fill={f.fill} />
+            <circle class="ruffle" cx={f.x} cy={f.y} r={f.r * 0.68} />
+            <circle class="heart" cx={f.x} cy={f.y} r={f.r * 0.28} />
+          </g>
+        ))}
+        <path
+          class="leaf"
+          d={`M0 ${strand.leafY} C7 ${strand.leafY + 6} 7 ${strand.leafY + 15} 0 ${strand.leafY + 22} C-7 ${strand.leafY + 15} -7 ${strand.leafY + 6} 0 ${strand.leafY}Z`}
+        />
+      </g>
+      <g class="marigold knot">
+        <circle r={strand.knot.r} fill={strand.knot.fill} />
+        <circle class="ruffle" r={strand.knot.r * 0.68} />
+        <circle class="heart" r={strand.knot.r * 0.28} />
+      </g>
+    </g>
+  ))}
+</svg>
+
+<style>
+  .garland {
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--ratio);
+    min-height: 4.5rem;
+    pointer-events: none;
+    filter: drop-shadow(0 0.35rem 0.4rem rgb(10 12 14 / 0.35));
+  }
+
+  /* The ruffled petals: a broken ring a shade lighter than the flower. */
+  .ruffle {
+    fill: none;
+    stroke: rgb(255 236 170 / 0.55);
+    stroke-width: 1.6;
+    stroke-dasharray: 1.4 1.8;
+  }
+
+  .heart {
+    fill: rgb(120 40 6 / 0.55);
+  }
+
+  .thread {
+    stroke: rgb(253 253 253 / 0.35);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .leaf {
+    fill: #3f7d3a;
+  }
+
+  .swag,
+  .strand {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+  }
+
+  /* A swag swinging toward you and away looks, from in front, like it rises and falls. */
+  @keyframes breathe {
+    to {
+      scale: 1 0.9;
+    }
+  }
+
+  @keyframes swing {
+    from {
+      rotate: -5deg;
+    }
+
+    to {
+      rotate: 5deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .swag {
+      animation: breathe 3.6s ease-in-out calc(var(--i) * -0.7s) infinite alternate;
+    }
+
+    .strand {
+      animation: swing var(--period) ease-in-out calc(var(--i) * -0.9s) infinite alternate;
+    }
+  }
+</style>

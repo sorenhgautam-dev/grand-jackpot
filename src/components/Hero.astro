@@ -3,6 +3,7 @@ import floor from '../assets/photos/floor.jpg';
 import { site } from '../data/site';
 import { formatPhone } from '../lib/format';
 import { strings, type Locale } from '../lib/i18n';
+import FlagString from './FlagString.astro';
 import OpeningStatus from './OpeningStatus.astro';
 import Photo from './Photo.astro';
 import Ridge from './Ridge.astro';
@@ -33,12 +34,33 @@ const phone = site.phones[0];
     <div class="glow"></div>
   </div>
 
+  <svg
+    class="prayer-flags"
+    viewBox="0 0 1000 66"
+    preserveAspectRatio="xMidYMin slice"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <FlagString from={[-6, 2]} to={[1006, 2]} sag={18} count={32} arrive="load" />
+  </svg>
+
   <div class="content wrap">
-    <p class="kicker label" lang="en">{site.hotel} · {street}</p>
+    <p class="kicker">
+      <span class="namaste" lang="ne">
+        नमस्ते
+      </span>
+      <span class="label" lang="en">
+        {site.hotel} · {street}
+      </span>
+    </p>
     <h1 id="hero-title" class="title" lang="en">
       <span class="visually-hidden">{site.name}</span>
-      <span class="line one" aria-hidden="true"><em>{first}</em></span>
-      <span class="line two" aria-hidden="true">{last}</span>
+      <span class="line one" aria-hidden="true">
+        <em>{first}</em>
+      </span>
+      <span class="line two" aria-hidden="true">
+        {last}
+      </span>
     </h1>
     <p class="lede">{t.home.line}</p>
   </div>
@@ -151,18 +173,46 @@ const phone = site.phones[0];
 
   /* ---------- The words ---------- */
 
+  /* ---------- Prayer flags, strung across under the header ---------- */
+
+  .prayer-flags {
+    --flags-height: clamp(3.25rem, 6.6vw, 6.5rem);
+    position: absolute;
+    top: var(--header-full);
+    inset-inline: 0;
+    display: block;
+    width: 100%;
+    height: var(--flags-height);
+    pointer-events: none;
+    filter: drop-shadow(0 0.4rem 0.5rem rgb(10 12 14 / 0.45));
+  }
+
   .content {
     display: grid;
     align-content: center;
     justify-items: center;
     gap: var(--space-5);
-    padding-block: calc(var(--header-full) + var(--space-7)) var(--space-7);
+    /* Clear of the header and the flags under it. */
+    padding-block: calc(var(--header-full) + clamp(3.25rem, 6.6vw, 6.5rem)) var(--space-6);
     text-align: center;
   }
 
   .kicker {
+    display: grid;
+    justify-items: center;
     margin: 0;
+  }
+
+  .kicker .label {
     color: var(--fg);
+  }
+
+  /* "Namaste", in the system's Devanagari face (see --font-native-label in tokens.css). */
+  .namaste {
+    color: var(--color-gold-light);
+    font-family: var(--font-native-label);
+    font-size: var(--text-21);
+    line-height: 1.5;
   }
 
   .title {
@@ -177,6 +227,26 @@ const phone = site.phones[0];
   .line {
     display: block;
     white-space: nowrap;
+  }
+
+  /* A band of gold light runs across the name now and then, like a lamp passing a sign. */
+  @supports (background-clip: text) {
+    .one em {
+      margin-inline: -0.12em;
+      padding-inline: 0.12em;
+      background: linear-gradient(
+          105deg,
+          var(--color-paper) 40%,
+          var(--color-gold-light) 46%,
+          #e6bd5c 50%,
+          var(--color-gold-light) 54%,
+          var(--color-paper) 60%
+        )
+        0 0 / 300% 100% no-repeat;
+      background-position: 100% 0;
+      background-clip: text;
+      color: transparent;
+    }
   }
 
   .lede {
@@ -274,6 +344,17 @@ const phone = site.phones[0];
     }
   }
 
+  @keyframes shine {
+    0%,
+    62% {
+      background-position: 100% 0;
+    }
+
+    100% {
+      background-position: 0% 0;
+    }
+  }
+
   /* As the hero leaves, the photograph drifts a little slower than the page. */
   @keyframes drift {
     to {
@@ -296,6 +377,10 @@ const phone = site.phones[0];
 
     .one {
       animation: line-up 900ms var(--ease-expo) calc(240ms + var(--intro, 0ms)) both;
+    }
+
+    .one em {
+      animation: shine 6.5s var(--ease-in-out) calc(400ms + var(--intro, 0ms)) infinite;
     }
 
     .two {

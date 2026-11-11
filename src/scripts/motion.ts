@@ -2,6 +2,8 @@
  * Reveals for everyone who hasn't asked for reduced motion.
  * See styles/motion.css: this script only marks elements; CSS does the moving.
  */
+import { scatter } from './petals';
+
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** What reveals, and how. Photos that are a page's main image load eagerly and stay put. */
@@ -55,7 +57,8 @@ function reveal(): void {
   }
 }
 
-/** Every tap or click on something that does something throws a chip-edge ring from that point. */
+/** Every tap or click on something that does something throws a chip-edge ring from that
+ *  point, and a few marigold petals with it. */
 function clicks(): void {
   addEventListener(
     'pointerdown',
@@ -68,6 +71,7 @@ function clicks(): void {
       ring.style.top = `${event.clientY}px`;
       document.body.append(ring);
       ring.addEventListener('animationend', () => ring.remove());
+      scatter(event.clientX, event.clientY, 7, 36);
     },
     { passive: true },
   );
@@ -75,6 +79,3 @@ function clicks(): void {
 
 if (!reduce && 'IntersectionObserver' in window) reveal();
 if (!reduce) clicks();
-
-// A module, so its names stay its own.
-export {};

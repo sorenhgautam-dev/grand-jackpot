@@ -1,7 +1,10 @@
 ---
 /**
- * The chapter mark that opens each section of the home page: a roman numeral in a square drawn
- * with two hairlines. Decorative, so screen readers skip it; the heading names the section.
+ * The chapter mark that opens each section of the home page: a lotus medallion, as carved
+ * over Newari doorways, with the number written twice inside it like the signs on a
+ * Kathmandu street, the roman numeral over the Devanagari one (I over १). The petals draw in
+ * when the mark comes into view, then turn very slowly. Decorative, so screen readers skip
+ * it; the heading names the section.
  */
 interface Props {
   n: number;
@@ -10,30 +13,134 @@ interface Props {
 
 const { n, class: className } = Astro.props;
 const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const devanagari = String(n).replace(/\d/g, (digit) => '०१२३४५६७८९'[Number(digit)] ?? digit);
+
+/* Sixteen petals between the seat and the outer ring of dots. */
+const petals = Array.from({ length: 16 }, (_, index) => ({
+  transform: `rotate(${index * 22.5})`,
+  style: `--i: ${index}`,
+}));
 ---
 
-<span class:list={['numeral', className]} aria-hidden="true" lang="en">
-  <span class="inner">{romans[n - 1] ?? String(n)}</span>
+<span class:list={['numeral', className]} aria-hidden="true">
+  <svg class="lotus" viewBox="-50 -50 100 100" data-draw focusable="false">
+    <circle class="dots" r="47.5"></circle>
+    <circle class="seat" r="33" pathLength="100"></circle>
+    <circle class="seat inner-ring" r="30" pathLength="100"></circle>
+    {petals.map((petal) => (
+      <path
+        class="petal"
+        transform={petal.transform}
+        style={petal.style}
+        pathLength="100"
+        d="M0 -33 C6 -37 7 -42 0 -46 C-7 -42 -6 -37 0 -33"
+      ></path>
+    ))}
+  </svg>
+  <span class="roman" lang="en">
+    {romans[n - 1] ?? String(n)}
+  </span>
+  <span class="dev" lang="ne">
+    {devanagari}
+  </span>
 </span>
 
 <style>
   .numeral {
+    position: relative;
+    isolation: isolate;
     display: inline-grid;
-    padding: 0.3125rem;
-    border: var(--rule) solid var(--line);
+    place-content: center;
+    justify-items: center;
+    width: 5.75rem;
+    aspect-ratio: 1;
+    color: var(--accent);
+    line-height: 1;
   }
 
-  .inner {
-    display: grid;
-    place-items: center;
-    min-width: 2.75rem;
-    height: 2.75rem;
-    padding-inline: 0.5rem;
-    border: var(--rule) solid var(--line);
-    color: var(--accent);
+  .roman {
+    min-width: 1.75rem;
+    padding: 0 0.25rem 0.3125rem;
+    border-bottom: var(--rule) solid var(--line);
     font-family: var(--font-display);
     font-size: var(--text-18);
-    line-height: 1;
     letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  /* The system's Devanagari face (see --font-native-label in tokens.css), so English pages
+     load no Devanagari font for one numeral. */
+  .dev {
+    padding-top: 0.3125rem;
+    font-family: var(--font-native-label);
+    font-size: var(--text-18);
+  }
+
+  .lotus {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .petal,
+  .seat {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 0.9;
+    stroke-linejoin: round;
+    opacity: 0.7;
+  }
+
+  .seat {
+    opacity: 0.45;
+  }
+
+  .inner-ring {
+    opacity: 0.25;
+  }
+
+  .dots {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0 4.66;
+    opacity: 0.6;
+  }
+
+  @keyframes turn {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lotus {
+      animation: turn 140s linear infinite;
+    }
+
+    /* Drawn in petal by petal once the mark is in view (scripts/motion.ts sets the
+       attributes). pathLength is 100, so these offsets replace the general line-drawing ones. */
+    .lotus[data-reveal='draw'] :is(.petal, .seat) {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      transition: stroke-dashoffset 1100ms var(--ease-out) calc(var(--i, 0) * 55ms + 150ms);
+    }
+
+    .lotus[data-reveal='draw'] .dots {
+      opacity: 0;
+      transition: opacity 900ms var(--ease-out) 900ms;
+    }
+
+    .lotus[data-reveal='draw'][data-in] :is(.petal, .seat) {
+      stroke-dashoffset: 0;
+    }
+
+    .lotus[data-reveal='draw'][data-in] .dots {
+      opacity: 0.6;
+    }
   }
 </style>

@@ -121,7 +121,12 @@ const ogUrl = new URL(og.src, Astro.site);
   <body>
     <div class="preloader" aria-hidden="true">
       <Chip class="spinner" />
-      <span lang="en">{site.name}</span>
+      <span class="namaste" lang="ne">
+        नमस्ते
+      </span>
+      <span class="name" lang="en">
+        {site.name}
+      </span>
     </div>
     <a class="skip" href="#main">
       {t.a11y.skip}
@@ -139,8 +144,8 @@ const ogUrl = new URL(og.src, Astro.site);
 </html>
 
 <style>
-  /* The curtain: a chip flips, the name sits under it, and the whole thing lifts away in about
-     a second and a half. CSS alone ends it, so it can never hang. */
+  /* The curtain: a chip flips, "namaste" and the name settle under it, and the whole thing
+     lifts away in about a second and a half. CSS alone ends it, so it can never hang. */
   .preloader {
     position: fixed;
     inset: 0;
@@ -148,7 +153,8 @@ const ogUrl = new URL(og.src, Astro.site);
     display: none;
     place-items: center;
     align-content: center;
-    gap: var(--space-5);
+    justify-items: center;
+    gap: var(--space-3);
     background: var(--color-felt-deep);
     color: var(--color-gold-light);
     font-family: var(--font-display);
@@ -170,8 +176,23 @@ const ogUrl = new URL(og.src, Astro.site);
     animation: flip 900ms var(--ease-expo) both;
   }
 
-  :global(html.intro) .preloader span {
-    animation: name-in 700ms var(--ease-expo) 150ms both;
+  .preloader :global(.spinner) {
+    margin-bottom: var(--space-3);
+  }
+
+  .preloader .namaste {
+    font-family: var(--font-native-label);
+    font-size: var(--text-21);
+    font-style: normal;
+    letter-spacing: 0.02em;
+  }
+
+  :global(html.intro) .preloader .namaste {
+    animation: name-in 700ms var(--ease-expo) 120ms both;
+  }
+
+  :global(html.intro) .preloader .name {
+    animation: name-in 700ms var(--ease-expo) 240ms both;
   }
 
   @keyframes curtain {

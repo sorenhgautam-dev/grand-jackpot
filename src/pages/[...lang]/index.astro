@@ -6,6 +6,7 @@ import Button from '../../components/Button.astro';
 import Chip from '../../components/Chip.astro';
 import Dhaka from '../../components/Dhaka.astro';
 import EventList from '../../components/EventList.astro';
+import Garland from '../../components/Garland.astro';
 import GameCard from '../../components/GameCard.astro';
 import GameWheel from '../../components/GameWheel.astro';
 import Hero from '../../components/Hero.astro';
@@ -90,7 +91,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 
   <!-- III. Tonight: the one dark band in the middle of the page. -->
   <section class="section woven" data-surface="wine" aria-labelledby="tonight">
-    <Dhaka edge="top" />
+    <Garland />
     <div class="head wrap">
       <Numeral n={3} />
       <h2 id="tonight" set:html={emphasis(t.home.tonight)} />
@@ -168,7 +169,10 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
       <dl class="reference" data-stagger>
         <div>
           <dt class="label">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3.5 2" />
+            </svg>
             {t.home.hoursLabel}
           </dt>
           <dd>
@@ -177,21 +181,32 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
         </div>
         <div>
           <dt class="label">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2" /><circle cx="12" cy="10" r="3" /><path d="M9 17h6" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="5" y="3" width="14" height="18" rx="2" />
+              <circle cx="12" cy="10" r="3" />
+              <path d="M9 17h6" />
+            </svg>
             {t.home.entryLabel}
           </dt>
           <dd>{t.home.entryValue}</dd>
         </div>
         <div>
           <dt class="label">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16v-3l2-5h12l2 5v3zM4 13h16M7 16v2.5M17 16v2.5" /><circle cx="7.5" cy="14.5" r="0.6" /><circle cx="16.5" cy="14.5" r="0.6" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 16v-3l2-5h12l2 5v3zM4 13h16M7 16v2.5M17 16v2.5" />
+              <circle cx="7.5" cy="14.5" r="0.6" />
+              <circle cx="16.5" cy="14.5" r="0.6" />
+            </svg>
             {t.home.gettingHereLabel}
           </dt>
           <dd>{t.home.gettingHereValue}</dd>
         </div>
         <div>
           <dt class="label">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6-5.6-6-10a6 6 0 1 1 12 0c0 4.4-6 10-6 10z" /><circle cx="12" cy="11" r="2" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 21s-6-5.6-6-10a6 6 0 1 1 12 0c0 4.4-6 10-6 10z" />
+              <circle cx="12" cy="11" r="2" />
+            </svg>
             {t.home.addressLabel}
           </dt>
           <dd>
@@ -412,12 +427,12 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     letter-spacing: 0.04em;
   }
 
-
   .schedule {
     max-width: calc(48rem + 2 * var(--gutter));
   }
 
-  /* A band of Dhaka weave runs along each edge of the evening band. */
+  /* Marigold garlands along the top of the evening band, as for Tihar, and a band of Dhaka
+     weave along its foot. */
   .woven {
     position: relative;
     padding-block: calc(var(--section-space) + var(--space-6));
@@ -434,7 +449,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     );
     position: relative;
     overflow: clip;
-    padding-bottom: calc(var(--section-space) + clamp(3rem, 11vw, 9rem));
+    padding-bottom: calc(var(--section-space) + clamp(4.5rem, 11vw, 9rem));
   }
 
   .peaks .intro {
@@ -452,7 +467,7 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     position: absolute;
     inset: auto 0 -1px;
     aspect-ratio: auto;
-    height: clamp(5rem, 16vw, 13rem);
+    height: clamp(6.5rem, 16vw, 13rem);
   }
 
   /* ---------- IV. Food and drink ---------- */
@@ -487,7 +502,6 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-
 
   .reference {
     max-width: 52rem;

@@ -1,7 +1,10 @@
 ---
+import FlagString from './FlagString.astro';
+
 /**
  * A Himalayan skyline. "line" is two ridges drawn as hairlines (the hero's foot, the footer);
- * "layers" is two filled ridges with the sun rising behind them (the packages band).
+ * "layers" is two filled ridges with the sun rising behind them, snow on the high peaks and a
+ * string of prayer flags tied between two summits (the packages band).
  * Decorative: hidden from screen readers.
  */
 interface Props {
@@ -14,8 +17,39 @@ interface Props {
 }
 
 const { variant = 'line', draw = false, flat = false, class: className } = Astro.props;
-const back =
-  'M0 150 L60 120 L110 135 L170 85 L205 105 L250 60 L285 90 L330 70 L380 115 L440 95 L500 40 L530 62 L560 30 L600 75 L650 100 L710 70 L760 110 L820 85 L880 50 L915 72 L950 20 L990 66 L1040 90 L1100 60 L1150 100 L1210 80 L1270 115 L1330 90 L1390 125 L1440 105';
+/* The far ridge, as points, so the high peaks can be found and capped with snow. */
+type Point = [x: number, y: number];
+// prettier-ignore
+const backPoints: Point[] = [
+  [0, 150], [60, 120], [110, 135], [170, 85], [205, 105], [250, 60], [285, 90], [330, 70],
+  [380, 115], [440, 95], [500, 40], [530, 62], [560, 30], [600, 75], [650, 100], [710, 70],
+  [760, 110], [820, 85], [880, 50], [915, 72], [950, 20], [990, 66], [1040, 90], [1100, 60],
+  [1150, 100], [1210, 80], [1270, 115], [1330, 90], [1390, 125], [1440, 105],
+];
+const back = backPoints.map(([x, y], index) => `${index ? 'L' : 'M'}${x} ${y}`).join(' ');
+
+/* Snow on every peak above the snow line: part of the way down each flank, with a ragged
+   lower edge where it gives way to rock. */
+const snowLine = 62;
+const along = ([ax, ay]: Point, [bx, by]: Point, f: number, drop = 0): string =>
+  `${(ax + (bx - ax) * f).toFixed(1)} ${(ay + (by - ay) * f + drop).toFixed(1)}`;
+const snow = backPoints.flatMap((peak, index) => {
+  const before = backPoints[index - 1];
+  const after = backPoints[index + 1];
+  const y = peak[1];
+  if (!before || !after || y > snowLine || y >= before[1] || y >= after[1]) return [];
+  const depth = Math.min(0.42, 22 / Math.max(after[1] - y, before[1] - y));
+  const left: Point = [peak[0] + (before[0] - peak[0]) * depth, y + (before[1] - y) * depth];
+  const right: Point = [peak[0] + (after[0] - peak[0]) * depth, y + (after[1] - y) * depth];
+  const edge = [
+    along(right, left, 0.28, -5),
+    along(right, left, 0.5, 3),
+    along(right, left, 0.72, -4),
+  ];
+  return [
+    `M${peak.join(' ')} L${along(peak, right, 1)} L${edge.join(' L')} L${along(peak, left, 1)}Z`,
+  ];
+});
 const front =
   'M0 175 L80 150 L150 165 L230 130 L300 155 L380 140 L450 165 L540 125 L620 155 L700 135 L790 160 L870 130 L960 158 L1050 138 L1140 162 L1230 140 L1320 165 L1440 145';
 const close = ' V200 H0 Z';
@@ -30,9 +64,24 @@ const close = ' V200 H0 Z';
   aria-hidden="true"
   focusable="false"
 >
-  {variant === 'layers' && <circle class="sun" cx="950" cy="78" r="44" />}
-  <path class="back" d={variant === 'layers' ? back + close : back}></path>
-  <path class="front" d={variant === 'layers' ? front + close : front}></path>
+  {variant === 'layers' ? (
+    <>
+      <circle class="sun" cx="950" cy="78" r="44" />
+      <g class="far">
+        <path class="back" d={back + close}></path>
+        {snow.map((cap) => (
+          <path class="snow" d={cap}></path>
+        ))}
+        <FlagString from={[560, 31]} to={[950, 21]} sag={34} count={15} />
+      </g>
+      <path class="front" d={front + close}></path>
+    </>
+  ) : (
+    <>
+      <path class="back" d={back}></path>
+      <path class="front" d={front}></path>
+    </>
+  )}
 </svg>
 
 <style>
@@ -65,6 +114,15 @@ const close = ' V200 H0 Z';
     fill: var(--ridge-front);
   }
 
+  .snow {
+    fill: var(--color-ivory);
+    opacity: 0.88;
+  }
+
+  .far {
+    --flag-cord: rgb(253 253 253 / 0.5);
+  }
+
   .sun {
     fill: var(--color-gold);
     opacity: 0.7;
@@ -91,7 +149,7 @@ const close = ' V200 H0 Z';
         animation-range: entry 10% cover 50%;
       }
 
-      [data-variant='layers'] .back {
+      [data-variant='layers'] .far {
         animation: lift linear both;
         animation-timeline: view();
         animation-range: entry 0% cover 50%;

@@ -1,0 +1,182 @@
+---
+/**
+ * A string of prayer flags (lungta), as they hang over passes, bridges and rooftops across
+ * Nepal: blue, white, red, green and yellow, over and over. Plain cloth, no printed text.
+ *
+ * It is an SVG group, drawn in the coordinates of the <svg> it is placed in: the cord runs
+ * from `from` to `to` and sags `sag` units at its middle. Each flag flutters a moment after
+ * the one before it, so a breeze seems to run along the string. Decorative.
+ */
+interface Props {
+  from: [x: number, y: number];
+  to: [x: number, y: number];
+  sag?: number;
+  count?: number;
+  /** "load": the flags unfurl one by one after the page arrives (the hero).
+   *  "scroll": they unfurl as the string scrolls into view. */
+  arrive?: 'load' | 'scroll';
+  class?: string | undefined;
+}
+
+const { from, to, sag = 30, count = 20, arrive = 'scroll', class: className } = Astro.props;
+const [x1, y1] = from;
+const [x2, y2] = to;
+
+/* The cord is a quadratic curve whose control point sits below the middle of the straight
+   line, so it hangs like a real cord; with the control point at the midpoint, x runs evenly. */
+const cx = (x1 + x2) / 2;
+const cy = (y1 + y2) / 2 + 2 * sag;
+const at = (t: number) => ({
+  x: (1 - t) ** 2 * x1 + 2 * (1 - t) * t * cx + t ** 2 * x2,
+  y: (1 - t) ** 2 * y1 + 2 * (1 - t) * t * cy + t ** 2 * y2,
+});
+const slope = (t: number) => {
+  const dx = 2 * (1 - t) * (cx - x1) + 2 * t * (x2 - cx);
+  const dy = 2 * (1 - t) * (cy - y1) + 2 * t * (y2 - cy);
+  return (Math.atan2(dy, dx) * 180) / Math.PI;
+};
+
+const pitch = Math.hypot(x2 - x1, y2 - y1) / count;
+const w = pitch * 0.8;
+const h = w * 1.18;
+/* The five colours in their traditional order: sky, wind, fire, water, earth. */
+const colours = ['blue', 'white', 'red', 'green', 'yellow'] as const;
+const flags = Array.from({ length: count }, (_, index) => {
+  const t = (index + 0.5) / count;
+  const { x, y } = at(t);
+  return {
+    transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${slope(t).toFixed(1)})`,
+    colour: colours[index % colours.length],
+    // Neighbours don't move in lockstep: the period varies a little along the string.
+    style: `--i: ${index}; --period: ${(2.4 + (index % 3) * 0.35).toFixed(2)}s`,
+  };
+});
+const cord = `M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}`;
+---
+
+<g class:list={['flags', className]} data-arrive={arrive} aria-hidden="true">
+  <path class="cord" d={cord}></path>
+  {flags.map((flag) => (
+    <g transform={flag.transform}>
+      <g class="flag" data-colour={flag.colour} style={flag.style}>
+        <rect class="cloth" x={-w / 2} y="0" width={w} height={h}></rect>
+        <rect
+          class="print"
+          x={-w / 2 + w * 0.2}
+          y={h * 0.18}
+          width={w * 0.6}
+          height={h * 0.6}
+        ></rect>
+      </g>
+    </g>
+  ))}
+</g>
+
+<style>
+  .cord {
+    fill: none;
+    stroke: var(--flag-cord, rgb(253 253 253 / 0.55));
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .flag {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+  }
+
+  .cloth {
+    fill: var(--cloth);
+  }
+
+  /* The block-printed panel, as a faint frame: the colour of the cloth, a shade darker. */
+  .print {
+    fill: none;
+    stroke: rgb(10 12 14 / 0.2);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  [data-colour='blue'] {
+    --cloth: #2f62b0;
+  }
+
+  [data-colour='white'] {
+    --cloth: #f3eee0;
+  }
+
+  [data-colour='red'] {
+    --cloth: #c4382a;
+  }
+
+  [data-colour='green'] {
+    --cloth: #2d8a56;
+  }
+
+  [data-colour='yellow'] {
+    --cloth: #ebb52d;
+  }
+
+  /* Cloth in the wind: the free edge swings while the sewn top edge stays on the cord. */
+  @keyframes flutter {
+    0% {
+      transform: skewX(7deg) scaleY(0.95);
+    }
+
+    50% {
+      transform: skewX(-4deg) scaleY(1.02);
+    }
+
+    100% {
+      transform: skewX(-9deg) scaleY(0.97);
+    }
+  }
+
+  @keyframes unfurl {
+    from {
+      opacity: 0;
+      scale: 1 0;
+    }
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .flag {
+      animation: flutter var(--period) ease-in-out calc(var(--i) * -0.16s) infinite alternate;
+    }
+
+    .cloth,
+    .print {
+      transform-box: fill-box;
+      transform-origin: 50% 0;
+    }
+
+    /* --i is set on .flag; the cloth inherits it, so each flag drops a moment after the last. */
+    [data-arrive='load'] :is(.cloth, .print) {
+      animation: unfurl 700ms var(--ease-expo) calc(var(--intro, 0ms) + 650ms + var(--i) * 28ms)
+        both;
+    }
+
+    [data-arrive='load'] .cord {
+      animation: appear 600ms var(--ease-out) calc(var(--intro, 0ms) + 550ms) both;
+    }
+
+    /* On scroll, the flags unfurl along the string as it comes up the window. */
+    @supports (animation-timeline: view()) {
+      [data-arrive='scroll'] {
+        view-timeline: --flags block;
+      }
+
+      [data-arrive='scroll'] :is(.cloth, .print) {
+        animation: unfurl linear both;
+        animation-timeline: --flags;
+        animation-range: cover calc(4% + var(--i) * 1.6%) cover calc(22% + var(--i) * 1.6%);
+      }
+    }
+  }
+</style>
