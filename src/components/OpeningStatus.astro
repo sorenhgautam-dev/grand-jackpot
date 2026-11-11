@@ -51,6 +51,21 @@ const config = JSON.stringify({
   }
 
   .status[data-state='open'] .dot {
-    background: currentColor;
+    border-color: var(--color-live);
+    background: var(--color-live);
+  }
+
+  /* Open now: the dot breathes. */
+  @keyframes live {
+    to {
+      box-shadow: 0 0 0 0.5rem transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .status[data-state='open'] .dot {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-live) 60%, transparent);
+      animation: live 2s var(--ease-out) infinite;
+    }
   }
 </style>

@@ -6,7 +6,9 @@ import hotel from '../assets/photos/hotel.jpg';
 import pool from '../assets/photos/pool.jpg';
 import reception from '../assets/photos/reception.jpg';
 import signpost from '../assets/photos/signpost.jpg';
+import { emphasis } from '../lib/emphasis';
 import { strings, type Locale } from '../lib/i18n';
+import Numeral from './Numeral.astro';
 import Photo from './Photo.astro';
 
 interface Props {
@@ -14,9 +16,11 @@ interface Props {
   /** The section's heading; the home page and the Visit page word it differently. */
   heading: string;
   headingLevel?: 'h2' | 'h3';
+  /** The chapter numeral, on the home page. */
+  numeral?: number | undefined;
 }
 
-const { locale, heading, headingLevel: Heading = 'h2' } = Astro.props;
+const { locale, heading, headingLevel: Heading = 'h2', numeral } = Astro.props;
 const t = strings(locale);
 
 /** The route from the hotel gate to the floor, in the order a guest walks it. */
@@ -27,7 +31,8 @@ const name = `way-in-${locale}`;
 
 <section class="way-in wrap" aria-labelledby={`${name}-title`}>
   <div class="head">
-    <Heading id={`${name}-title`}>{heading}</Heading>
+    {numeral && <Numeral n={numeral} />}
+    <Heading id={`${name}-title`} set:html={emphasis(heading)} />
     <p>{t.wayIn.intro}</p>
   </div>
   <fieldset class="stops">
@@ -68,23 +73,32 @@ const name = `way-in-${locale}`;
 
 <style>
   .way-in {
-    padding-block: 5rem;
+    padding-block: var(--section-space);
   }
 
   .head {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
     max-width: 36rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: var(--space-7);
   }
 
   .head :is(h2, h3) {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: var(--text-section);
   }
 
   .head p {
     margin: 0;
-    font-size: var(--text-21);
-    line-height: var(--line-snug);
+    color: var(--fg-muted);
+    font-size: var(--text-18);
+    line-height: var(--line-body);
+  }
+
+  /* Each photograph stands under the shape of the copper arch at the casino's door. */
+  .stop :global(.stage.photo) {
+    border-radius: 999px 999px 0 0;
   }
 
   .stops {
@@ -132,8 +146,7 @@ const name = `way-in-${locale}`;
 
   .title {
     font-family: var(--font-display);
-    font-size: var(--text-21);
-    font-weight: 600;
+    font-size: var(--text-24);
     line-height: var(--line-tight);
   }
 
@@ -251,12 +264,11 @@ const name = `way-in-${locale}`;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
       gap: 3rem;
-      padding-block: 7rem;
     }
 
     .head {
       position: sticky;
-      top: calc(var(--header-height) + 2rem);
+      top: calc(var(--header-height) + var(--space-6));
       align-self: start;
     }
 

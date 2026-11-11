@@ -27,24 +27,26 @@ export default defineConfig({
   },
   fonts: [
     {
-      // Headings in both languages: a high-contrast display serif with Devanagari.
+      // Headings: Fraunces, a soft, slightly wonky old-style serif with a lively italic.
+      // Variable weight. Latin only, so Devanagari falls through to Tiro below (no generic
+      // family here, or it would catch Devanagari first).
       provider: fontProviders.google(),
-      name: 'Rozha One',
-      cssVariable: '--font-rozha',
-      weights: ['400'],
-      styles: ['normal'],
-      subsets: ['latin', 'devanagari'],
-      fallbacks: ['Georgia', 'serif'],
+      name: 'Fraunces',
+      cssVariable: '--font-fraunces',
+      weights: ['300 800'],
+      styles: ['normal', 'italic'],
+      subsets: ['latin'],
+      fallbacks: ['Georgia'],
     },
     {
-      // The giant English words only (hero, marquee, footer wordmark): Latin is enough.
+      // Hindi headings: a calm book serif with an italic, to sit beside Fraunces.
       provider: fontProviders.google(),
-      name: 'Archivo Black',
-      cssVariable: '--font-archivo',
+      name: 'Tiro Devanagari Hindi',
+      cssVariable: '--font-tiro',
       weights: ['400'],
-      styles: ['normal'],
-      subsets: ['latin'],
-      fallbacks: ['Arial', 'sans-serif'],
+      styles: ['normal', 'italic'],
+      subsets: ['devanagari'],
+      fallbacks: ['Georgia', 'serif'],
     },
     {
       provider: fontProviders.google(),

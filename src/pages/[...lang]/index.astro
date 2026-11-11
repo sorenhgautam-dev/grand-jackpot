@@ -1,19 +1,25 @@
 ---
 import { getImage } from 'astro:assets';
 import entrance from '../../assets/photos/entrance.jpg';
-import floor from '../../assets/photos/floor.jpg';
+import mocktails from '../../assets/photos/mocktails.jpg';
 import Button from '../../components/Button.astro';
+import Chip from '../../components/Chip.astro';
+import Dhaka from '../../components/Dhaka.astro';
 import EventList from '../../components/EventList.astro';
+import GameCard from '../../components/GameCard.astro';
+import GameWheel from '../../components/GameWheel.astro';
 import Hero from '../../components/Hero.astro';
-import Marquee from '../../components/Marquee.astro';
 import HoursTable from '../../components/HoursTable.astro';
-import Icon from '../../components/Icon.astro';
+import Numeral from '../../components/Numeral.astro';
 import Photo from '../../components/Photo.astro';
+import Ridge from '../../components/Ridge.astro';
+import Suits from '../../components/Suits.astro';
 import Venue from '../../components/Venue.astro';
 import WayIn from '../../components/WayIn.astro';
 import { directionsUrl, site } from '../../data/site';
 import Base from '../../layouts/Base.astro';
 import { entries, slugOf } from '../../lib/content';
+import { emphasis } from '../../lib/emphasis';
 import { langParams, localePath, strings, type Locale } from '../../lib/i18n';
 import { casinoJsonLd } from '../../lib/schema';
 
@@ -26,6 +32,11 @@ const [events, games, venues] = await Promise.all([
   entries('games', locale),
   entries('venues', locale),
 ]);
+const nextConfig = JSON.stringify({
+  items: events.map((event) => ({ id: slugOf(event.id), times: event.data.times })),
+  timeZone: site.timezone,
+  titles: Object.fromEntries(events.map((event) => [slugOf(event.id), event.data.title])),
+});
 const og = await getImage({ src: entrance, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.src, Astro.site));
 ---
@@ -40,95 +51,149 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
 >
   <Hero locale={locale} />
 
-  <section class="tonight wrap section" aria-labelledby="tonight">
-    <div class="head">
-      <h2 id="tonight">{t.home.tonight}</h2>
-      <Button href={localePath(locale, '/whats-on/')} variant="secondary">
-        {t.common.seeAllEvents}
-      </Button>
-    </div>
-    <div class="body">
-      <EventList locale={locale} events={events} days={2} limit={3} />
-    </div>
+  <!-- I. What the place is, in one centred paragraph. -->
+  <section class="statement section wrap" data-stagger>
+    <Chip class="float one" />
+    <Chip class="float two" color="var(--color-felt)" />
+    <Chip class="float three" color="var(--color-ink)" />
+    <Chip class="float four" color="var(--color-copper)" />
+    <Numeral n={1} />
+    <p class="statement-text">{t.home.statement}</p>
+    <Button href={localePath(locale, '/visit/')} variant="secondary">
+      {t.common.planVisit}
+    </Button>
   </section>
 
-  <section class="gaming wrap section" aria-labelledby="gaming">
-    <Photo
-      src={floor}
-      alt={t.wayIn.stops[6]?.alt ?? ''}
-      ratio="landscape"
-      sizes="(min-width: 64rem) 55vw, 100vw"
-      class="gaming-photo"
-    />
-    <div class="gaming-text">
-      <h2 id="gaming">{t.home.gaming}</h2>
-      <p class="lede">{t.home.gamingText}</p>
-      <ul class="game-names" data-stagger>
-        {games.map((game) => (
-          <li>
-            <a href={localePath(locale, `/gaming/${slugOf(game.id)}/`)}>
-              <span>{game.data.title}</span>
-              <Icon name="arrow" class="go" />
-            </a>
-          </li>
-        ))}
-      </ul>
+  <Suits />
+
+  <!-- II. The games, each under the arch of the casino's door. -->
+  <section class="section table" data-surface="felt" aria-labelledby="gaming">
+    <div class="head wrap">
+      <Numeral n={2} />
+      <h2 id="gaming" set:html={emphasis(t.home.gaming)} />
+      <p class="intro">{t.home.gamingText}</p>
+    </div>
+    <ul class="cards wrap" data-stagger>
+      {games.map((game, index) => (
+        <GameCard locale={locale} game={game} index={index} />
+      ))}
+    </ul>
+    <div class="wrap">
+      <GameWheel locale={locale} games={games} />
+    </div>
+    <div class="after wrap">
       <Button href={localePath(locale, '/gaming/')} variant="secondary">
         {t.home.gamingLink}
       </Button>
     </div>
   </section>
 
-  <Marquee items={games.map((game) => game.data.title)} />
+  <!-- III. Tonight: the one dark band in the middle of the page. -->
+  <section class="section woven" data-surface="wine" aria-labelledby="tonight">
+    <Dhaka edge="top" />
+    <div class="head wrap">
+      <Numeral n={3} />
+      <h2 id="tonight" set:html={emphasis(t.home.tonight)} />
+      <p class="next" data-next={nextConfig} hidden>
+        <span class="label">{t.events.next}</span>
+        <span class="next-name" data-name></span>
+        <span class="clock" data-clock role="timer"></span>
+      </p>
+    </div>
+    <div class="schedule wrap">
+      <EventList locale={locale} events={events} days={2} limit={3} />
+    </div>
+    <div class="after wrap">
+      <Button href={localePath(locale, '/whats-on/')} variant="secondary">
+        {t.common.seeAllEvents}
+      </Button>
+    </div>
+    <Dhaka edge="bottom" />
+  </section>
 
-  <section class="dining wrap section" aria-labelledby="dining">
-    <div class="head head-row">
-      <h2 id="dining">{t.home.dining}</h2>
+  <!-- IV. Food and drink: two photographs, offset, of different shapes. -->
+  <section class="section" aria-labelledby="dining">
+    <div class="head wrap">
+      <Numeral n={4} />
+      <h2 id="dining" set:html={emphasis(t.home.dining)} />
+      <p class="intro">{t.dining.intro}</p>
+    </div>
+    <div class="venues wrap" data-stagger>
+      {venues.map((venue, index) => (
+        <Venue
+          locale={locale}
+          venue={venue}
+          ratio={index % 2 ? 'portrait' : 'landscape'}
+          sizes={index % 2 ? '(min-width: 64rem) 34vw, 100vw' : '(min-width: 64rem) 42vw, 100vw'}
+        />
+      ))}
+      <Photo
+        src={mocktails}
+        alt={t.dining.mocktailsAlt}
+        ratio="portrait"
+        sizes="(min-width: 48rem) 20vw, 60vw"
+        class="extra"
+      />
+    </div>
+    <div class="after wrap">
       <Button href={localePath(locale, '/dining/')} variant="secondary">
         {t.home.diningLink}
       </Button>
     </div>
-    <div class="venues" data-stagger>
-      {venues.map((venue) => (
-        <Venue locale={locale} venue={venue} />
-      ))}
-    </div>
   </section>
 
-  <section class="packages" data-surface="umber" aria-labelledby="packages">
-    <div class="wrap packages-inner">
-      <h2 id="packages">{t.home.packages}</h2>
-      <div class="packages-text">
-        <p class="lede">{t.home.packagesText}</p>
-        <Button href={localePath(locale, '/packages/')}>{t.common.seePackages}</Button>
-      </div>
+  <!-- V. Packages, on the one warm band. -->
+  <section class="section peaks" data-surface="umber" aria-labelledby="packages">
+    <div class="head wrap">
+      <Numeral n={5} />
+      <h2 id="packages" set:html={emphasis(t.home.packages)} />
+      <p class="intro">{t.home.packagesText}</p>
+      <Button href={localePath(locale, '/packages/')}>{t.common.seePackages}</Button>
     </div>
+    <Ridge variant="layers" />
   </section>
 
-  <WayIn locale={locale} heading={t.home.wayIn} />
+  <!-- VI. The way in, from the hotel gate to the floor. -->
+  <WayIn locale={locale} heading={t.home.wayIn} numeral={6} />
 
-  <section class="before" data-surface="charcoal" aria-labelledby="before">
-    <div class="wrap section">
-      <div class="head">
-        <h2 id="before">{t.home.beforeYouGo}</h2>
-      </div>
-      <dl class="reference body" data-stagger>
+  <Suits reverse />
+
+  <!-- VII. The practical things, as a short reference. -->
+  <section class="section" data-surface="sand" aria-labelledby="before">
+    <div class="head wrap">
+      <Numeral n={7} />
+      <h2 id="before" set:html={emphasis(t.home.beforeYouGo)} />
+    </div>
+    <div class="wrap">
+      <dl class="reference" data-stagger>
         <div>
-          <dt class="label">{t.home.hoursLabel}</dt>
+          <dt class="label">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
+            {t.home.hoursLabel}
+          </dt>
           <dd>
             <HoursTable locale={locale} />
           </dd>
         </div>
         <div>
-          <dt class="label">{t.home.entryLabel}</dt>
+          <dt class="label">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2" /><circle cx="12" cy="10" r="3" /><path d="M9 17h6" /></svg>
+            {t.home.entryLabel}
+          </dt>
           <dd>{t.home.entryValue}</dd>
         </div>
         <div>
-          <dt class="label">{t.home.gettingHereLabel}</dt>
+          <dt class="label">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16v-3l2-5h12l2 5v3zM4 13h16M7 16v2.5M17 16v2.5" /><circle cx="7.5" cy="14.5" r="0.6" /><circle cx="16.5" cy="14.5" r="0.6" /></svg>
+            {t.home.gettingHereLabel}
+          </dt>
           <dd>{t.home.gettingHereValue}</dd>
         </div>
         <div>
-          <dt class="label">{t.home.addressLabel}</dt>
+          <dt class="label">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6-5.6-6-10a6 6 0 1 1 12 0c0 4.4-6 10-6 10z" /><circle cx="12" cy="11" r="2" /></svg>
+            {t.home.addressLabel}
+          </dt>
           <dd>
             <address>
               {site.hotel}, {site.address.street}, {site.address.locality}
@@ -149,126 +214,284 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   </section>
 </Base>
 
+<script>
+  import '../../scripts/next-event';
+</script>
+
 <style>
-  /* One rhythm: every section is --section-space tall at each end; light sections that follow
-     one another are divided by a hairline. Content sits on a 12-column grid. */
+  /* One rhythm: every section is --section-space tall at each end, and opens with a centred
+     head: the numeral, the heading, then a short paragraph. */
   .section {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--space-5);
-    row-gap: var(--space-6);
+    gap: var(--space-7);
     padding-block: var(--section-space);
   }
 
-  .section > * {
-    grid-column: 1 / -1;
+  /* Ivory sections that follow one another are divided by a hairline, inside the margins. */
+  .section:not([data-surface]) + .section:not([data-surface]) {
+    background-image: linear-gradient(var(--line), var(--line));
+    background-size: calc(100% - 2 * var(--gutter)) var(--rule);
+    background-position: top center;
+    background-repeat: no-repeat;
   }
 
-  /* Gold hairlines divide the black sections; the charcoal band needs none. */
-  .tonight,
-  .gaming {
-    border-top: var(--rule) solid var(--line);
+  .head {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+    text-align: center;
   }
 
   h2 {
     margin: 0;
     font-size: var(--text-section);
+    line-height: var(--line-tight);
   }
 
-  .head {
-    display: grid;
-    gap: var(--space-5);
-    align-content: start;
-    justify-items: start;
-  }
-
-  .head-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    justify-content: space-between;
-    gap: var(--space-5);
-  }
-
-  .lede {
-    max-width: 40ch;
+  .intro {
+    max-width: 44ch;
     margin: 0;
-    font-size: var(--text-21);
-    line-height: var(--line-snug);
+    color: var(--fg-muted);
+    font-size: var(--text-18);
+    line-height: var(--line-body);
   }
 
-  .lede:lang(hi) {
+  .head :global(.button) {
+    margin-top: var(--space-3);
+  }
+
+  .after {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---------- I. Statement ---------- */
+
+  .statement {
+    justify-items: center;
+    gap: var(--space-6);
+    text-align: center;
+  }
+
+  .statement-text {
+    max-width: 24em;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-statement);
+    line-height: 1.18;
+    text-wrap: balance;
+  }
+
+  /* Chips lie about the statement and drift at different speeds as it scrolls by. */
+  .statement {
+    position: relative;
+    overflow: clip;
+  }
+
+  .statement > :global(:not(.float)) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .statement :global(.float) {
+    position: absolute;
+    --drift: 3rem;
+  }
+
+  .statement :global(.one) {
+    top: 14%;
+    left: -1.25rem;
+    width: 4.5rem;
+    rotate: -18deg;
+  }
+
+  .statement :global(.two) {
+    top: 8%;
+    right: -0.75rem;
+    width: 3.25rem;
+    rotate: 14deg;
+    --drift: 5rem;
+  }
+
+  .statement :global(.three) {
+    right: -1.5rem;
+    bottom: 10%;
+    width: 5.5rem;
+    rotate: 24deg;
+    --drift: 2rem;
+  }
+
+  .statement :global(.four) {
+    bottom: 6%;
+    left: 0.5rem;
+    width: 2.75rem;
+    rotate: -8deg;
+    --drift: 6rem;
+  }
+
+  @keyframes drift {
+    from {
+      translate: 0 var(--drift);
+    }
+
+    to {
+      translate: 0 calc(-1 * var(--drift));
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .statement :global(.float) {
+        animation: drift linear both;
+        animation-timeline: view();
+      }
+    }
+  }
+
+  .statement-text:lang(hi) {
     line-height: 1.6;
   }
 
-  .gaming-text {
-    display: grid;
-    gap: var(--space-5);
-    align-content: center;
-    justify-items: start;
-  }
+  /* ---------- II. Game cards: a rail you swipe on phones, a grid from tablets up ---------- */
 
-  /* The games as an index: a name, and an arrow that slides in when you point at it. */
-  .game-names {
+  .cards {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--space-5);
-    width: 100%;
-    margin: 0;
-    padding: 0;
+    grid-auto-flow: column;
+    grid-auto-columns: min(78%, 20rem);
+    gap: var(--space-4);
+    margin: 0 auto;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
     list-style: none;
   }
 
-  .game-names a {
+  .cards > :global(*) {
+    scroll-snap-align: start;
+  }
+
+  /* The table: baize, lit from above. */
+  .table {
+    background-image: radial-gradient(
+      ellipse 70% 50% at 50% 0%,
+      color-mix(in oklab, var(--color-paper) 14%, transparent),
+      transparent 70%
+    );
+  }
+
+  /* ---------- III. Tonight ---------- */
+
+  .next {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    min-height: calc(var(--tap) + var(--space-2));
-    border-bottom: var(--rule) solid var(--line);
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: var(--space-2) var(--space-5);
+    border: var(--rule) solid var(--line);
+    border-radius: var(--radius-pill);
+  }
+
+  .next[hidden] {
+    display: none;
+  }
+
+  .next-name {
     font-family: var(--font-display);
-    font-size: var(--text-21);
-    line-height: var(--line-tight);
-    text-decoration: none;
+    font-size: var(--text-24);
+    line-height: 1;
   }
 
-  .game-names a span {
-    transition: translate var(--dur-hover) var(--ease-expo);
-  }
-
-  .game-names :global(.go) {
-    flex: none;
-    width: 1.125rem;
+  .clock {
     color: var(--accent);
-    opacity: 0;
-    translate: calc(-1 * var(--space-3)) 0;
-    transition:
-      opacity var(--dur-hover) var(--ease-expo),
-      translate var(--dur-hover) var(--ease-expo);
+    font-size: var(--text-21);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
   }
+
+
+  .schedule {
+    max-width: calc(48rem + 2 * var(--gutter));
+  }
+
+  /* A band of Dhaka weave runs along each edge of the evening band. */
+  .woven {
+    position: relative;
+    padding-block: calc(var(--section-space) + var(--space-6));
+  }
+
+  /* ---------- V. Packages: the sun comes up behind the Himalaya, whose near ridge is the
+     ivory of the section below ---------- */
+
+  .peaks {
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-copper) 62%, var(--color-umber)),
+      var(--color-umber) 78%
+    );
+    position: relative;
+    overflow: clip;
+    padding-bottom: calc(var(--section-space) + clamp(3rem, 11vw, 9rem));
+  }
+
+  .peaks .intro {
+    color: var(--fg);
+  }
+
+  .peaks .head {
+    position: relative;
+    z-index: 1;
+  }
+
+  .peaks :global(.ridge) {
+    --ridge-back: color-mix(in oklab, var(--color-umber) 70%, var(--color-ink));
+    --ridge-front: var(--color-ivory);
+    position: absolute;
+    inset: auto 0 -1px;
+    aspect-ratio: auto;
+    height: clamp(5rem, 16vw, 13rem);
+  }
+
+  /* ---------- IV. Food and drink ---------- */
 
   .venues {
     display: grid;
     gap: var(--space-7);
   }
 
-  .packages {
-    padding-block: var(--section-space);
+  /* A third photograph, small and arched, tucks in beside the pair. */
+  .venues :global(.extra.photo) {
+    justify-self: end;
+    width: 58%;
+    border-radius: 999px 999px 0 0;
   }
 
-  .packages-inner {
-    display: grid;
-    gap: var(--space-5);
+  /* ---------- VII. Before you go ---------- */
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
   }
 
-  .packages-text {
-    display: grid;
-    gap: var(--space-6);
-    justify-items: start;
+  dt svg {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
+
 
   .reference {
-    margin: 0;
+    max-width: 52rem;
+    margin: 0 auto;
   }
 
   .reference > div {
@@ -276,6 +499,10 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     gap: var(--space-2);
     padding-block: var(--space-5);
     border-top: var(--rule) solid var(--line);
+  }
+
+  .reference > div:last-child {
+    border-bottom: var(--rule) solid var(--line);
   }
 
   dd {
@@ -291,21 +518,38 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
     margin-top: var(--space-4);
   }
 
-  @media (hover: hover) {
-    .game-names a:hover span {
-      translate: var(--space-2) 0;
-    }
-
-    .game-names a:hover :global(.go) {
-      opacity: 1;
-      translate: 0 0;
-    }
-  }
-
   @media (width >= 48rem) {
-    .venues {
+    .cards {
+      grid-auto-flow: row;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-6);
+      gap: var(--space-5);
+      overflow: visible;
+    }
+
+    .venues {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--space-5);
+      align-items: start;
+    }
+
+    .venues > :global(:nth-child(1)) {
+      grid-column: 1 / span 7;
+      grid-row: 1;
+    }
+
+    .venues :global(.extra.photo) {
+      grid-column: 5 / span 3;
+      grid-row: 2;
+      justify-self: stretch;
+      width: auto;
+      margin-top: var(--space-5);
+    }
+
+    /* The second photograph stands taller and lower, so the pair reads as a spread. */
+    .venues > :global(:nth-child(2)) {
+      grid-column: 8 / -1;
+      grid-row: 1 / span 2;
+      margin-top: var(--space-9);
     }
 
     .reference > div {
@@ -315,42 +559,20 @@ const jsonLd = casinoJsonLd(new URL(localePath(locale), Astro.site), new URL(og.
   }
 
   @media (width >= 64rem) {
-    .tonight .head,
-    .before .head {
-      grid-column: 1 / span 4;
+    .cards {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .tonight .body,
-    .before .body {
-      grid-column: 6 / -1;
+    .venues > :global(:nth-child(1)) {
+      grid-column: 2 / span 6;
     }
 
-    .gaming {
-      align-items: center;
+    .venues > :global(:nth-child(2)) {
+      grid-column: 9 / span 4;
     }
 
-    .gaming :global(.gaming-photo) {
-      grid-column: 1 / span 7;
-    }
-
-    .gaming .gaming-text {
-      grid-column: 9 / -1;
-    }
-
-    .packages-inner {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      column-gap: var(--space-5);
-      align-items: end;
-    }
-
-    .packages-inner h2 {
-      grid-column: 1 / span 5;
-      font-size: var(--text-96);
-      line-height: var(--line-display);
-    }
-
-    .packages-text {
-      grid-column: 7 / -1;
+    .venues :global(.extra.photo) {
+      grid-column: 6 / span 2;
     }
   }
 </style>

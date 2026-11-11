@@ -119,10 +119,16 @@ const config = JSON.stringify({
 
   .date {
     margin: 0 0 0.25rem;
+    color: var(--accent);
     font-family: var(--font-body);
-    font-size: var(--text-16);
-    font-weight: 600;
+    font-size: var(--text-label);
     line-height: var(--line-snug);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .date:lang(hi) {
+    font-size: var(--text-16);
     letter-spacing: 0;
   }
 

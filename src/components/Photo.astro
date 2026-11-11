@@ -13,7 +13,8 @@ interface Props {
   sizes: string;
   /** The page's LCP image: loaded eagerly at high priority and never faded. */
   priority?: boolean;
-  /** Focal point for the crop, as an `object-position` value. */
+  /** Focal point, as an `object-position` value. The image service crops by keyword only
+   *  (center, top, left…), so a percentage frames the photo on screen but crops from the centre. */
   position?: string;
   transitionName?: string | undefined;
   class?: string | undefined;
@@ -31,6 +32,7 @@ const {
 } = Astro.props;
 
 const width = Math.min(src.width, Math.round(src.height * ratios[ratio]));
+const cropPosition = /^[a-z ]+$/.test(position) ? position : 'center';
 const height = Math.round(width / ratios[ratio]);
 const style = [
   `--object-position: ${position}`,
@@ -53,7 +55,7 @@ const style = [
     width={width}
     height={height}
     fit="cover"
-    position={position}
+    position={cropPosition}
     layout="full-width"
     sizes={sizes}
     loading={priority ? 'eager' : 'lazy'}
@@ -82,6 +84,11 @@ const style = [
 
   .photo[data-ratio='portrait'] {
     aspect-ratio: 4 / 5;
+  }
+
+  .photo :global(picture) {
+    display: block;
+    height: 100%;
   }
 
   .photo :global(img) {

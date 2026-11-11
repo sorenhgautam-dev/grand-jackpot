@@ -1,5 +1,5 @@
-/* On the home page the header is clear over the hero at the very top, and turns solid as soon
-   as the page scrolls, so the hero's words never slide under the logo and links. */
+/* The header turns solid, and folds its row of links away, as soon as the page scrolls. Over the
+   home hero it is clear until then, so the photograph shows through. */
 const header = document.querySelector<HTMLElement>('[data-header]');
 
 if (header) {

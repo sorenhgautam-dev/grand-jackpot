@@ -5,6 +5,7 @@ import { formatIntervals, formatPhone } from '../lib/format';
 import { localePath, strings, type Locale } from '../lib/i18n';
 import Button from './Button.astro';
 import LanguageSwitch from './LanguageSwitch.astro';
+import Ridge from './Ridge.astro';
 
 interface Props {
   locale: Locale;
@@ -81,6 +82,9 @@ const year = new Date().getFullYear();
       <LanguageSwitch locale={locale} path={path} />
     </div>
   </div>
+  <div class="skyline">
+    <Ridge draw />
+  </div>
   <div class="wordmark" aria-hidden="true" lang="en">
     <span>{site.name}</span>
   </div>
@@ -105,7 +109,7 @@ const year = new Date().getFullYear();
   .name {
     margin: 0 0 var(--space-3);
     font-family: var(--font-display);
-    font-size: var(--text-24);
+    font-size: var(--text-36);
     line-height: var(--line-tight);
   }
 
@@ -175,10 +179,15 @@ const year = new Date().getFullYear();
     font-size: var(--text-14);
   }
 
-  /* The name, set edge to edge in the grotesk, closes every page. */
+  .skyline {
+    margin-top: var(--space-7);
+    color: color-mix(in oklab, var(--color-gold) 70%, transparent);
+  }
+
+  /* The name, set wide in the italic serif, closes every page. */
   .wordmark {
     overflow: clip;
-    padding-block: var(--space-7) max(var(--space-5), env(safe-area-inset-bottom));
+    padding-block: var(--space-5) max(var(--space-5), env(safe-area-inset-bottom));
     padding-inline: max(var(--gutter), env(safe-area-inset-left))
       max(var(--gutter), env(safe-area-inset-right));
   }
@@ -186,12 +195,13 @@ const year = new Date().getFullYear();
   .wordmark span {
     display: block;
     color: var(--accent);
-    font-family: var(--font-grotesk);
-    font-size: 6.6vw;
-    line-height: var(--line-display);
-    letter-spacing: -0.035em;
+    font-family: var(--font-display);
+    font-size: 8.4vw;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.015em;
     text-align: center;
-    text-transform: uppercase;
     white-space: nowrap;
   }
 

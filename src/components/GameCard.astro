@@ -1,0 +1,175 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { slugOf } from '../lib/content';
+import { localePath, type Locale } from '../lib/i18n';
+import Photo from './Photo.astro';
+
+interface Props {
+  locale: Locale;
+  game: CollectionEntry<'games'>;
+  /** Its place in the deck: the corner suit cycles spade, heart, club, diamond. */
+  index?: number;
+}
+
+const { locale, game, index = 0 } = Astro.props;
+/** The four suits on the front of the casino building. \uFE0E keeps them text, not emoji. */
+const suit = ['♠', '♥', '♣', '♦'][index % 4] + '\uFE0E';
+const red = index % 2 === 1;
+const slug = slugOf(game.id);
+const href = localePath(locale, `/gaming/${slug}/`);
+/** Games with no photograph yet show their first letter in the arch, not a stand-in picture. */
+const [initial] = new Intl.Segmenter(locale).segment(game.data.title);
+---
+
+<li class="card" data-surface="ivory" data-link-zone>
+  <span class="pip" data-red={red ? '' : undefined} aria-hidden="true">{suit}</span>
+  <span class="pip end" data-red={red ? '' : undefined} aria-hidden="true">{suit}</span>
+  <h3 style={`view-transition-name: game-${slug}-title`}>
+    <a href={href}>{game.data.title}</a>
+  </h3>
+  {game.data.photo ? (
+    <Photo
+      src={game.data.photo}
+      alt={game.data.photoAlt ?? ''}
+      ratio="portrait"
+      sizes="(min-width: 64rem) 15vw, (min-width: 48rem) 28vw, 52vw"
+      transitionName={`game-${slug}-photo`}
+      class="arch"
+    />
+  ) : (
+    <div class="arch empty" aria-hidden="true">
+      <span>{initial?.segment}</span>
+    </div>
+  )}
+  <p>{game.data.summary}</p>
+</li>
+
+<style>
+  /* A playing card: ivory, round-cornered, a suit in two corners. The whole card answers a
+     click through the heading's link. */
+  .card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    justify-items: center;
+    gap: var(--space-5);
+    padding: var(--space-7) var(--space-5) var(--space-7);
+    border: var(--rule) solid var(--line);
+    border-radius: 0.75rem;
+    text-align: center;
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-hover) var(--ease-expo),
+      translate var(--dur-hover) var(--ease-expo),
+      rotate var(--dur-hover) var(--ease-expo);
+  }
+
+  .pip {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-4);
+    color: var(--color-ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: var(--text-21);
+    line-height: 1;
+  }
+
+  .pip.end {
+    inset: auto var(--space-4) var(--space-3) auto;
+    rotate: 180deg;
+  }
+
+  .pip[data-red] {
+    color: var(--color-crimson);
+  }
+
+  /* Dealt, not faded: each card drops onto the table at a slight angle and squares up. */
+  @keyframes deal {
+    from {
+      opacity: 0;
+      translate: 0 -3rem;
+      rotate: -7deg;
+      scale: 0.94;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card[data-reveal='item'] {
+      translate: none;
+      transition-delay: 0s;
+    }
+
+    .card[data-reveal='item'][data-in] {
+      animation: deal 700ms var(--ease-expo) var(--delay, 0ms) backwards;
+    }
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--text-card);
+    line-height: var(--line-tight);
+  }
+
+  h3 a {
+    text-decoration: none;
+  }
+
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  h3 a:focus-visible {
+    outline: none;
+  }
+
+  .card:has(a:focus-visible) {
+    outline: var(--focus-ring) solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  /* The copper arch over the casino's door, as the frame for each game. */
+  .card :global(.arch.photo),
+  .empty {
+    width: 66%;
+    border-radius: 999px 999px 0 0;
+  }
+
+  .empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    border: var(--rule) solid var(--line);
+    background: var(--wash);
+  }
+
+  .empty span {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: var(--text-72);
+    font-style: italic;
+    line-height: 1;
+  }
+
+  p {
+    max-width: 26ch;
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: var(--text-16);
+    line-height: var(--line-body);
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 1.25rem 2rem rgb(10 12 14 / 0.22);
+      translate: 0 -0.375rem;
+      rotate: -1deg;
+    }
+
+    .card:nth-child(even):hover {
+      rotate: 1deg;
+    }
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+/**
+ * A ribbon of the four card suits (the ones on the front of the casino building) that slides
+ * sideways as the page scrolls past it. It moves only with the scroll, never on its own.
+ */
+interface Props {
+  reverse?: boolean;
+}
+
+const { reverse = false } = Astro.props;
+const suits = ['♠', '♥', '♣', '♦'];
+const row = Array.from({ length: 28 }, (_, index) => ({
+  glyph: `${suits[index % 4]}︎`,
+  red: index % 2 === 1,
+  outline: index % 3 === 0,
+}));
+---
+
+<div class="suits" data-reverse={reverse ? '' : undefined} aria-hidden="true">
+  <div class="track">
+    {row.map((suit) => (
+      <span data-red={suit.red ? '' : undefined} data-outline={suit.outline ? '' : undefined}>
+        {suit.glyph}
+      </span>
+    ))}
+  </div>
+</div>
+
+<style>
+  .suits {
+    overflow: clip;
+    padding-block: var(--space-5);
+  }
+
+  .track {
+    display: flex;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    width: max-content;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+    line-height: 1;
+  }
+
+  span {
+    color: var(--color-ink);
+  }
+
+  [data-red] {
+    color: var(--color-crimson);
+  }
+
+  [data-outline] {
+    -webkit-text-stroke: 1.5px currentColor;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes slide {
+    from {
+      translate: 0 0;
+    }
+
+    to {
+      translate: -35% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .track {
+        animation: slide linear both;
+        animation-timeline: view();
+      }
+
+      [data-reverse] .track {
+        animation-direction: reverse;
+      }
+    }
+  }
+</style>

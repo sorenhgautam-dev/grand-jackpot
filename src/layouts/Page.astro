@@ -56,7 +56,7 @@ const {
         src={photo}
         alt={photoAlt}
         ratio="landscape"
-        sizes="(min-width: 64rem) 50vw, 100vw"
+        sizes="(min-width: 64rem) 60rem, 100vw"
         priority
         transitionName={transitionKey && `${transitionKey}-photo`}
         class="header-photo"
@@ -67,23 +67,27 @@ const {
 </Base>
 
 <style>
+  /* Every inner page opens like a chapter of the home page: a centred title and introduction,
+     and the page's photograph below them, framed by the margins. */
   .page-header {
     display: grid;
-    gap: var(--space-6);
-    padding-block: var(--space-7) var(--space-8);
+    justify-items: center;
+    gap: var(--space-7);
+    padding-block: var(--space-8);
   }
 
   .text {
     display: grid;
+    justify-items: center;
     gap: var(--space-5);
-    align-content: end;
+    text-align: center;
   }
 
   h1 {
     margin: 0;
     font-size: var(--text-page);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
+    line-height: 1;
+    letter-spacing: -0.01em;
   }
 
   h1:lang(hi) {
@@ -92,14 +96,16 @@ const {
   }
 
   .intro {
-    max-width: 40ch;
+    max-width: 44ch;
     margin: 0;
-    font-size: var(--text-21);
-    line-height: var(--line-snug);
+    color: var(--fg-muted);
+    font-size: var(--text-18);
+    line-height: var(--line-body);
   }
 
-  :lang(hi) .intro {
-    line-height: 1.6;
+  .page-header :global(.header-photo) {
+    width: 100%;
+    max-width: 60rem;
   }
 
   /* The title rises out from behind its own bottom edge, and the rest follows; pages that
@@ -135,13 +141,7 @@ const {
 
   @media (width >= 64rem) {
     .page-header {
-      padding-block: var(--space-8) var(--space-9);
-    }
-
-    .has-photo {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-      align-items: end;
-      gap: var(--space-8);
+      padding-block: var(--space-9);
     }
   }
 </style>

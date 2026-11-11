@@ -1,10 +1,11 @@
 ---
-import entranceTall from '../assets/photos/entrance-tall.jpg';
+import floor from '../assets/photos/floor.jpg';
 import { site } from '../data/site';
-import { localePath, strings, type Locale } from '../lib/i18n';
-import Button from './Button.astro';
+import { formatPhone } from '../lib/format';
+import { strings, type Locale } from '../lib/i18n';
 import OpeningStatus from './OpeningStatus.astro';
 import Photo from './Photo.astro';
+import Ridge from './Ridge.astro';
 
 interface Props {
   locale: Locale;
@@ -13,338 +14,311 @@ interface Props {
 const { locale } = Astro.props;
 const t = strings(locale);
 
-/**
- * The name set as the picture: one word per line, alternating a heavy grotesk in capitals
- * with the display serif, placed start, indented and end. Screen readers get the name whole.
- */
-const places = ['start', 'indent', 'end'] as const;
-const words = site.name.split(' ').map((word, index) => ({
-  word,
-  face: index % 2 ? 'serif' : 'grotesk',
-  place: places[index % places.length],
-  index,
-}));
+/** The name in two lines: "Grand Jackpot" in italic, "Casino" upright beneath it. */
+const [first = site.name, last = ''] = site.name.split(/ (?=\S+$)/);
+const street = site.address.street.split(',')[0];
+const phone = site.phones[0];
 ---
 
 <section class="hero" data-surface="ink" data-hero aria-labelledby="hero-title">
-  <div class="stage wrap">
+  <div class="backdrop">
     <Photo
-      src={entranceTall}
-      alt={t.wayIn.stops[4]?.alt ?? ''}
-      ratio="portrait"
-      sizes="(min-width: 48rem) 24vw, 46vw"
+      src={floor}
+      alt={t.wayIn.stops[6]?.alt ?? ''}
+      ratio="wide"
+      sizes="(max-aspect-ratio: 16/9) 178vh, 100vw"
+      position="42% 50%"
       priority
-      class="portrait"
     />
-    <h1 id="hero-title" class="name" lang="en">
+    <div class="glow"></div>
+  </div>
+
+  <div class="content wrap">
+    <p class="kicker label" lang="en">{site.hotel} · {street}</p>
+    <h1 id="hero-title" class="title" lang="en">
       <span class="visually-hidden">{site.name}</span>
-      {words.map(({ word, face, place, index }) => (
-        <span
-          class="word"
-          data-face={face}
-          data-place={place}
-          style={`--i: ${index}`}
-          aria-hidden="true"
-        >
-          <span class="inner">{word}</span>
-        </span>
-      ))}
+      <span class="line one" aria-hidden="true"><em>{first}</em></span>
+      <span class="line two" aria-hidden="true">{last}</span>
     </h1>
-    <span class="mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
-        <path d="M12 1.5v21M1.5 12h21M4.6 4.6l14.8 14.8M19.4 4.6L4.6 19.4"></path>
-      </svg>
-    </span>
-    <div class="aside">
-      <p class="line">{t.home.line}</p>
+    <p class="lede">{t.home.line}</p>
+  </div>
+
+  <div class="foot wrap">
+    <Ridge flat />
+    <div class="foot-row">
       <OpeningStatus locale={locale} />
-      <div class="buttons">
-        <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
-        <Button href={localePath(locale, '/whats-on/')} variant="secondary">
-          {t.common.whatsOn}
-        </Button>
-      </div>
+      {phone && (
+        <p class="call">
+          <span>{t.footer.call}</span>
+          <a href={`tel:${phone}`}>{formatPhone(phone)}</a>
+        </p>
+      )}
     </div>
   </div>
 </section>
 
 <script>
-  import '../scripts/header';
+  /* A warm light follows the pointer across the photograph, as if you were looking around. */
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+
+  if (hero && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let frame = 0;
+    let x = 0;
+    let y = 0;
+    hero.addEventListener('pointermove', (event) => {
+      const box = hero.getBoundingClientRect();
+      x = event.clientX - box.left;
+      y = event.clientY - box.top;
+      frame ||= requestAnimationFrame(() => {
+        frame = 0;
+        hero.style.setProperty('--mx', `${x}px`);
+        hero.style.setProperty('--my', `${y}px`);
+        hero.dataset.lit = '';
+      });
+    });
+    hero.addEventListener('pointerleave', () => delete hero.dataset.lit);
+  }
 </script>
 
 <style>
   .hero {
-    /* Measure the scroll-out from the window's top edge, not below the header's padding. */
+    /* Measured from the window's top edge, for the photograph's drift as the hero leaves. */
     view-timeline: --hero block;
-    view-timeline-inset: 0;
-    display: grid;
-    align-items: center;
-    min-height: max(36rem, 100svh);
-    margin-top: calc(-1 * (var(--header-height) + env(safe-area-inset-top)));
-    padding-top: calc(var(--header-height) + env(safe-area-inset-top));
-    overflow: clip;
-  }
-
-  .stage {
     position: relative;
     isolation: isolate;
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--space-5);
-    padding-block: var(--space-7) var(--space-8);
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: max(36rem, 100svh);
+    overflow: clip;
   }
 
-  /* The entrance stands in the grid under the name, its top tucked behind the last line and
-     fading to black so the words over it stay sharp. A fine gold frame stands off it. It has
-     its own columns, so it never meets the text beside it. */
-  .stage :global(.portrait) {
-    position: relative;
-    z-index: 0;
-    grid-row: 2;
-    grid-column: 5 / -1;
-    margin-top: calc(var(--text-hero) * -0.38);
-    outline: var(--rule) solid var(--accent);
-    outline-offset: var(--space-2);
+  /* ---------- The photograph: full bleed, toned down so the words over it read ---------- */
+
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
   }
 
-  .stage :global(.portrait)::after {
+  .backdrop :global(.photo[data-ratio]),
+  .backdrop :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    background: var(--color-ink);
+  }
+
+  /* The stills are daylight phone video: cooler, darker and less saturated, they sit at night. */
+  .backdrop :global(img) {
+    height: 100%;
+    filter: saturate(0.7) sepia(0.12) brightness(0.6) contrast(1.06);
+  }
+
+  /* Dark at the top for the header, a pool of shade behind the name, dark again at the foot. */
+  .backdrop::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to bottom,
-      var(--color-ink) 0%,
-      color-mix(in oklab, var(--color-ink) 55%, transparent) 22%,
-      transparent 48%
-    );
-    pointer-events: none;
+    background:
+      radial-gradient(ellipse 58% 42% at 50% 50%, rgb(10 12 14 / 0.5), transparent 72%),
+      linear-gradient(
+        to bottom,
+        rgb(10 12 14 / 0.72) 0%,
+        rgb(10 12 14 / 0.18) 26%,
+        rgb(10 12 14 / 0.22) 62%,
+        rgb(10 12 14 / 0.86) 100%
+      );
   }
 
-  .name {
-    position: relative;
+  .glow {
+    position: absolute;
+    inset: 0;
     z-index: 1;
-    grid-column: 1 / -1;
+    background: radial-gradient(
+      circle 22rem at var(--mx, 50%) var(--my, 50%),
+      rgb(255 214 150 / 0.55),
+      transparent 72%
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    transition: opacity 500ms var(--ease-out);
+  }
+
+  .hero[data-lit] .glow {
+    opacity: 1;
+  }
+
+  /* ---------- The words ---------- */
+
+  .content {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--space-5);
+    padding-block: calc(var(--header-full) + var(--space-7)) var(--space-7);
+    text-align: center;
+  }
+
+  .kicker {
     margin: 0;
     color: var(--fg);
-    font-size: var(--text-hero);
-    line-height: var(--line-display);
-    letter-spacing: 0;
   }
 
-  .word {
+  .title {
+    margin: 0;
+    font-size: var(--text-hero);
+    line-height: var(--line-display);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    text-wrap: initial;
+  }
+
+  .line {
     display: block;
     white-space: nowrap;
   }
 
-  .inner {
-    display: inline-block;
-  }
-
-  [data-face='grotesk'] {
-    font-family: var(--font-grotesk);
-    letter-spacing: -0.035em;
-    text-transform: uppercase;
-  }
-
-  [data-face='serif'] {
-    color: var(--accent);
-    font-family: var(--font-display);
-    font-size: 1.12em;
-    letter-spacing: -0.02em;
-  }
-
-  [data-place='indent'] {
-    padding-inline-start: 0.3em;
-  }
-
-  [data-place='end'] {
-    text-align: end;
-  }
-
-  .mark {
-    position: absolute;
-    z-index: 2;
-    top: calc(var(--space-7) + var(--text-hero) * 0.12);
-    right: max(var(--gutter), env(safe-area-inset-right));
-    width: calc(var(--text-hero) * 0.42);
-    color: var(--accent);
-  }
-
-  .mark svg {
-    width: 100%;
-    height: auto;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.6;
-    stroke-linecap: round;
-  }
-
-  .aside {
-    position: relative;
-    z-index: 2;
-    grid-row: 3;
-    grid-column: 1 / -1;
-    display: grid;
-    gap: var(--space-4);
-    justify-items: start;
-    margin-top: var(--space-6);
-  }
-
-  .line {
-    max-width: 34ch;
+  .lede {
+    max-width: 36ch;
     margin: 0;
     font-size: var(--text-18);
     line-height: var(--line-body);
   }
 
-  .buttons {
+  /* ---------- The foot: open now, and a number to call ---------- */
+
+  .foot-row {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-2);
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2) var(--space-6);
+    padding-block: var(--space-4) max(var(--space-5), env(safe-area-inset-bottom));
+    font-size: var(--text-14);
+  }
+
+  /* A Himalayan skyline stands in for the rule above the foot. */
+  .foot :global(.ridge) {
+    aspect-ratio: auto;
+    min-height: 0;
+    height: clamp(2.25rem, 6vw, 4.5rem);
+    color: color-mix(in oklab, var(--color-paper) 60%, transparent);
+  }
+
+  .foot-row :global(.status) {
+    margin: 0;
+  }
+
+  .call {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .call span {
+    color: var(--fg-muted);
+  }
+
+  .call a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-variant-numeric: tabular-nums;
   }
 
   @media (width >= 48rem) {
-    [data-place='indent'] {
-      padding-inline-start: 0.45em;
-    }
-
-    .stage :global(.portrait) {
-      grid-column: 4 / span 4;
-      margin-top: calc(var(--text-hero) * -0.44);
-      outline-offset: var(--space-3);
-    }
-
-    .aside {
-      grid-row: 2;
-      grid-column: 9 / -1;
-      align-self: start;
-      margin-top: var(--space-6);
+    .foot-row {
+      justify-content: space-between;
     }
   }
 
-  @media (width >= 64rem) {
-    .stage :global(.portrait) {
-      grid-column: 5 / span 3;
-    }
-  }
+  /* ---------- Arrival: one sequence, under a second for the words ---------- */
 
-  /* ---------- Arrival: the words slide in from alternate sides, out of a blur ---------- */
-
-  @keyframes word-in {
-    from {
-      opacity: 0.01;
-      translate: var(--from) 0;
-      filter: blur(0.12em);
-    }
-  }
-
-  /* The photograph fades up at full size while the picture inside settles. Its painted area
-     never changes, so it counts once as the page's largest paint (a growing clip would keep
-     re-counting it, and hold the measurement back until the reveal ended). */
-  @keyframes photo-in {
+  @keyframes fade-in {
     from {
       opacity: 0.01;
     }
   }
 
-  @keyframes photo-settle {
+  @keyframes settle {
     from {
-      scale: var(--reveal-zoom);
+      scale: 1.08;
+    }
+  }
+
+  /* Each line of the name rises out from behind its own lower edge. */
+  @keyframes line-up {
+    from {
+      clip-path: inset(100% -0.3em -0.4em -0.3em);
+      translate: 0 0.3em;
+    }
+
+    to {
+      clip-path: inset(-0.3em -0.3em -0.4em -0.3em);
+      translate: 0 0;
     }
   }
 
   @keyframes rise {
     from {
       opacity: 0;
-      translate: 0 var(--reveal-rise);
+      translate: 0 0.75rem;
     }
   }
 
-  @keyframes mark-in {
+  @keyframes draw {
     from {
-      opacity: 0;
-      rotate: -120deg;
-      scale: 0.4;
+      stroke-dashoffset: 3000;
     }
   }
 
-  @keyframes turn {
+  /* As the hero leaves, the photograph drifts a little slower than the page. */
+  @keyframes drift {
     to {
-      rotate: 1turn;
-    }
-  }
-
-  /* ---------- Leaving: the words part sideways and the photograph lifts away faster ---------- */
-
-  @keyframes part-left {
-    to {
-      translate: -12% 0;
-    }
-  }
-
-  @keyframes part-right {
-    to {
-      translate: 12% 0;
-    }
-  }
-
-  @keyframes lift {
-    to {
-      translate: 0 -24%;
+      translate: 0 16%;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .inner {
-      --from: -0.6em;
-      animation: word-in var(--dur-hero-word) var(--ease-expo) both;
-      animation-delay: calc(120ms + var(--i) * var(--stagger-hero));
+    .backdrop {
+      animation: fade-in 900ms var(--ease-out) both;
     }
 
-    [data-place='indent'] .inner {
-      --from: 0.6em;
+    .backdrop :global(img) {
+      animation: settle 1800ms var(--ease-expo) both;
     }
 
-    .stage :global(.portrait) {
-      animation: photo-in var(--dur-reveal-photo) var(--ease-expo) both;
+    .kicker {
+      animation: rise 800ms var(--ease-expo) calc(150ms + var(--intro, 0ms)) both;
     }
 
-    .stage :global(.portrait img) {
-      animation: photo-settle calc(var(--dur-reveal-photo) * 1.4) var(--ease-expo) both;
+    .one {
+      animation: line-up 900ms var(--ease-expo) calc(240ms + var(--intro, 0ms)) both;
     }
 
-    .aside {
-      animation: rise var(--dur-reveal) var(--ease-expo) 650ms both;
+    .two {
+      animation: line-up 900ms var(--ease-expo) calc(340ms + var(--intro, 0ms)) both;
     }
 
-    .mark svg {
-      animation:
-        mark-in var(--dur-reveal) var(--ease-expo) 800ms both,
-        turn 24s linear 1.8s infinite;
+    .lede {
+      animation: rise 800ms var(--ease-expo) calc(500ms + var(--intro, 0ms)) both;
+    }
+
+    .foot {
+      animation: rise 800ms var(--ease-expo) calc(620ms + var(--intro, 0ms)) both;
+    }
+
+    .foot :global(.ridge path) {
+      animation: draw 3200ms cubic-bezier(0.3, 0, 0.3, 1) calc(500ms + var(--intro, 0ms)) both;
     }
 
     @supports (animation-timeline: view()) {
-      .word {
-        animation: part-left linear both;
-        animation-timeline: --hero;
-        animation-range: exit 0% exit 100%;
-      }
-
-      [data-place='indent'] {
-        animation-name: part-right;
-      }
-
-      .mark {
-        animation: lift linear both;
-        animation-timeline: --hero;
-        animation-range: exit 0% exit 100%;
-      }
-
-      .stage :global(.portrait) {
+      .backdrop {
         animation:
-          photo-in var(--dur-reveal-photo) var(--ease-expo) both,
-          lift linear both;
+          fade-in 900ms var(--ease-out) both,
+          drift linear both;
         animation-timeline: auto, --hero;
         animation-range:
           normal,

@@ -1,0 +1,50 @@
+---
+/**
+ * A band of Dhaka weave, the stepped-diamond cloth of the Nepali topi, in the surface's accent
+ * colour. It drifts slowly sideways, like cloth being drawn through a loom. Decorative.
+ * The parent must be positioned; the band sits along its top or bottom edge.
+ */
+interface Props {
+  edge: 'top' | 'bottom';
+}
+
+const { edge } = Astro.props;
+---
+
+<div class="dhaka" data-edge={edge} aria-hidden="true"></div>
+
+<style>
+  .dhaka {
+    --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M24 2.5 33.5 12 24 21.5 14.5 12Z'/%3E%3Cpath d='M0 5.5 6.5 12 0 18.5M48 5.5 41.5 12 48 18.5'/%3E%3Cpath d='M9 1v3h3M39 1v3h-3M9 23v-3h3M39 23v-3h-3'/%3E%3C/g%3E%3Cpath d='M24 8 28 12 24 16 20 12Z'/%3E%3C/svg%3E");
+    position: absolute;
+    inset-inline: 0;
+    height: 1.5rem;
+    background: var(--accent);
+    opacity: 0.55;
+    mask: var(--tile) 0 0 / 3rem 100% repeat-x;
+  }
+
+  [data-edge='top'] {
+    top: var(--space-5);
+  }
+
+  [data-edge='bottom'] {
+    bottom: var(--space-5);
+  }
+
+  @keyframes weave {
+    to {
+      mask-position: 3rem 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .dhaka {
+      animation: weave 9s linear infinite;
+    }
+
+    [data-edge='bottom'] {
+      animation-direction: reverse;
+    }
+  }
+</style>

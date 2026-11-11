@@ -1,7 +1,7 @@
 ---
 import floor from '../../../assets/photos/floor.jpg';
 import Button from '../../../components/Button.astro';
-import GameRow from '../../../components/GameRow.astro';
+import GameCard from '../../../components/GameCard.astro';
 import Page from '../../../layouts/Page.astro';
 import { entries } from '../../../lib/content';
 import { langParams, localePath, strings, type Locale } from '../../../lib/i18n';
@@ -36,9 +36,9 @@ const games = await entries('games', locale);
 
   <section class="games wrap" aria-labelledby="games">
     <h2 id="games">{t.gaming.games}</h2>
-    <ul>
-      {games.map((game) => (
-        <GameRow locale={locale} game={game} />
+    <ul class="cards" data-stagger>
+      {games.map((game, index) => (
+        <GameCard locale={locale} game={game} index={index} />
       ))}
     </ul>
   </section>
@@ -82,7 +82,11 @@ const games = await entries('games', locale);
     margin: 0;
   }
 
-  .games ul {
+  /* The same arch cards as the home page: two across on phones, four on wide screens. */
+  .games .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-5);
     margin: 0;
     padding: 0;
     list-style: none;

@@ -1,0 +1,101 @@
+---
+/**
+ * A Himalayan skyline. "line" is two ridges drawn as hairlines (the hero's foot, the footer);
+ * "layers" is two filled ridges with the sun rising behind them (the packages band).
+ * Decorative: hidden from screen readers.
+ */
+interface Props {
+  variant?: 'line' | 'layers';
+  /** Draw the line in when it first scrolls into view (see scripts/motion.ts). */
+  draw?: boolean;
+  /** Stretch to whatever box it is given (a low, wide skyline) instead of keeping its shape. */
+  flat?: boolean;
+  class?: string | undefined;
+}
+
+const { variant = 'line', draw = false, flat = false, class: className } = Astro.props;
+const back =
+  'M0 150 L60 120 L110 135 L170 85 L205 105 L250 60 L285 90 L330 70 L380 115 L440 95 L500 40 L530 62 L560 30 L600 75 L650 100 L710 70 L760 110 L820 85 L880 50 L915 72 L950 20 L990 66 L1040 90 L1100 60 L1150 100 L1210 80 L1270 115 L1330 90 L1390 125 L1440 105';
+const front =
+  'M0 175 L80 150 L150 165 L230 130 L300 155 L380 140 L450 165 L540 125 L620 155 L700 135 L790 160 L870 130 L960 158 L1050 138 L1140 162 L1230 140 L1320 165 L1440 145';
+const close = ' V200 H0 Z';
+---
+
+<svg
+  class:list={['ridge', className]}
+  data-variant={variant}
+  data-draw={draw ? '' : undefined}
+  viewBox="0 0 1440 200"
+  preserveAspectRatio={flat ? 'none' : 'xMidYMax slice'}
+  aria-hidden="true"
+  focusable="false"
+>
+  {variant === 'layers' && <circle class="sun" cx="950" cy="78" r="44" />}
+  <path class="back" d={variant === 'layers' ? back + close : back}></path>
+  <path class="front" d={variant === 'layers' ? front + close : front}></path>
+</svg>
+
+<style>
+  .ridge {
+    display: block;
+    width: 100%;
+    /* The drawing's own shape; on phones it keeps a minimum height and crops at the sides. */
+    aspect-ratio: 1440 / 200;
+    min-height: 3.5rem;
+  }
+
+  [data-variant='line'] path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-dasharray: 3000;
+    vector-effect: non-scaling-stroke;
+  }
+
+  [data-variant='line'] .front {
+    opacity: 0.45;
+  }
+
+  [data-variant='layers'] .back {
+    fill: var(--ridge-back);
+  }
+
+  [data-variant='layers'] .front {
+    fill: var(--ridge-front);
+  }
+
+  .sun {
+    fill: var(--color-gold);
+    opacity: 0.7;
+  }
+
+  /* As the band scrolls into view the sun comes up and the far ridge rises behind the near one. */
+  @keyframes sunrise {
+    from {
+      translate: 0 110px;
+    }
+  }
+
+  @keyframes lift {
+    from {
+      translate: 0 36px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      [data-variant='layers'] .sun {
+        animation: sunrise linear both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 50%;
+      }
+
+      [data-variant='layers'] .back {
+        animation: lift linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 50%;
+      }
+    }
+  }
+</style>

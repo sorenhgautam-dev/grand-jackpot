@@ -11,6 +11,8 @@ interface Props {
 }
 
 const { locale, current = false } = Astro.props;
+/** "Grand Jackpot" set large, "Casino · Kathmandu" small beneath it: a hotel lockup. */
+const [first = site.name, last = ''] = site.name.split(/ (?=\S+$)/);
 ---
 
 <a
@@ -20,8 +22,9 @@ const { locale, current = false } = Astro.props;
   aria-current={current ? 'page' : undefined}
 >
   <Image src={mark} alt="" width={40} height={45} loading="eager" class="mark" />
-  <span class="name" lang="en">
-    {site.name}
+  <span class="lockup" lang="en">
+    <span class="name">{first}</span>
+    <span class="place">{last} · {site.address.locality}</span>
   </span>
 </a>
 
@@ -29,27 +32,57 @@ const { locale, current = false } = Astro.props;
   .logo {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     min-height: var(--tap);
     text-decoration: none;
   }
 
   .mark {
-    width: 2.5rem;
+    display: none;
+    width: 1.75rem;
     height: auto;
+  }
+
+  .lockup {
+    display: grid;
+    justify-items: center;
+    gap: 0.125rem;
   }
 
   .name {
     font-family: var(--font-display);
-    font-size: var(--text-21);
+    font-size: 0.9375rem;
     font-weight: 600;
-    line-height: var(--line-tight);
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    /* Tracking adds space after the last letter too; this keeps the word centred. */
+    margin-inline-end: -0.14em;
+  }
+
+  .place {
+    font-size: 0.5625rem;
+    line-height: 1;
+    letter-spacing: 0.32em;
+    margin-inline-end: -0.32em;
+    text-transform: uppercase;
     white-space: nowrap;
   }
 
-  @media (width < 22.5rem) {
+  @media (width >= 30rem) {
+    .mark {
+      display: block;
+    }
+  }
+
+  @media (width >= 64rem) {
     .name {
-      font-size: var(--text-18);
+      font-size: var(--text-21);
+    }
+
+    .place {
+      font-size: 0.625rem;
     }
   }
 </style>

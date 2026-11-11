@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 
 interface Props {
-  /** Primary: solid gold, the one main action in a view. Secondary: outlined in gold. */
+  /** Primary: solid (ink on ivory, gold on dark), the one main action in a view. Secondary: outlined. */
   variant?: 'primary' | 'secondary' | undefined;
   /** An icon before the label, where it carries meaning (directions, call). */
   icon?: 'pin' | 'phone' | undefined;
@@ -106,9 +106,10 @@ const arrow = Boolean(href) && !icon;
     color: var(--action-fg);
   }
 
-  /* Gold fills to white under the pointer; the dark label keeps 19:1 either way. */
+  /* The fill under the pointer: umber on ivory, white on the dark bands. The label keeps
+     its contrast either way. */
   [data-variant='primary']::before {
-    background: var(--fg);
+    background: var(--action-hover);
   }
 
   [data-variant='secondary'] {

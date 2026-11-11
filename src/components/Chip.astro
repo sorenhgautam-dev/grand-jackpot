@@ -1,0 +1,54 @@
+---
+/** A casino chip, drawn: a coloured disc with eight white edge inserts. Decorative. */
+interface Props {
+  /** A CSS colour for the chip's body. */
+  color?: string;
+  class?: string | undefined;
+}
+
+const { color = 'var(--color-crimson)', class: className } = Astro.props;
+---
+
+<svg
+  class:list={['chip', className]}
+  style={`--chip: ${color}`}
+  viewBox="-50 -50 100 100"
+  aria-hidden="true"
+  focusable="false"
+>
+  <circle class="body" r="48"></circle>
+  <circle class="inserts" r="42.5"></circle>
+  <circle class="ring" r="31"></circle>
+  <circle class="ring fine" r="22"></circle>
+</svg>
+
+<style>
+  .chip {
+    display: block;
+    width: 4rem;
+    height: auto;
+    filter: drop-shadow(0 0.5rem 0.75rem rgb(10 12 14 / 0.25));
+  }
+
+  .body {
+    fill: var(--chip);
+  }
+
+  .inserts {
+    fill: none;
+    stroke: var(--color-paper);
+    stroke-width: 9;
+    stroke-dasharray: 16.7 16.68;
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--color-paper);
+    stroke-width: 1.5;
+    opacity: 0.85;
+  }
+
+  .ring.fine {
+    stroke-dasharray: 2 3;
+  }
+</style>

@@ -1,0 +1,271 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { slugOf } from '../lib/content';
+import { localePath, strings, type Locale } from '../lib/i18n';
+import Button from './Button.astro';
+
+/**
+ * "Can't decide?": a wheel with one wedge per game. Spinning it picks a game and shows what it
+ * is and where to learn it. No stakes, no score: it is a way into the game pages.
+ */
+interface Props {
+  locale: Locale;
+  games: CollectionEntry<'games'>[];
+}
+
+const { locale, games } = Astro.props;
+const t = strings(locale);
+const step = 360 / games.length;
+const point = (degrees: number, radius: number) => {
+  const angle = ((degrees - 90) * Math.PI) / 180;
+  return `${(radius * Math.cos(angle)).toFixed(2)} ${(radius * Math.sin(angle)).toFixed(2)}`;
+};
+const wedges = games.map((game, index) => ({
+  d: `M0 0 L${point(index * step, 100)} A100 100 0 0 1 ${point((index + 1) * step, 100)} Z`,
+  mid: index * step + step / 2,
+  label: game.data.title.split(' (')[0],
+}));
+const items = games.map((game) => ({
+  title: game.data.title,
+  summary: game.data.summary,
+  href: localePath(locale, `/gaming/${slugOf(game.id)}/`),
+}));
+---
+
+<div class="wheel" data-wheel={JSON.stringify(items)} data-again={t.home.spinAgain}>
+  <svg viewBox="-112 -116 224 232" aria-hidden="true" focusable="false">
+    <g class="rotor" data-rotor>
+      {wedges.map((wedge, index) => (
+        <g>
+          <path class="wedge" data-red={index % 2 ? undefined : ''} d={wedge.d} />
+          <text transform={`rotate(${wedge.mid}) translate(0 -64) rotate(-90)`}>{wedge.label}</text>
+        </g>
+      ))}
+      <circle class="rim" r="103" />
+      <circle class="hub" r="17" />
+      <circle class="pin" r="5" />
+    </g>
+    <path class="pointer" d="M-8 -116 L8 -116 L0 -98 Z"></path>
+  </svg>
+  <div class="words">
+    <h3>{t.home.wheelTitle}</h3>
+    <p class="hint">{t.home.wheelText}</p>
+    <Button type="button" data-spin>{t.home.spin}</Button>
+    <div class="result" aria-live="polite">
+      <p class="picked" data-name></p>
+      <p class="summary" data-summary></p>
+      <a class="more" data-link href={localePath(locale, '/gaming/')} hidden>
+        {t.common.howToPlay}
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface Item {
+    title: string;
+    summary: string;
+    href: string;
+  }
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-wheel]')) {
+    const items = JSON.parse(root.dataset.wheel ?? '[]') as Item[];
+    const rotor = root.querySelector<SVGGElement>('[data-rotor]');
+    const button = root.querySelector<HTMLButtonElement>('[data-spin]');
+    const name = root.querySelector<HTMLElement>('[data-name]');
+    const summary = root.querySelector<HTMLElement>('[data-summary]');
+    const link = root.querySelector<HTMLAnchorElement>('[data-link]');
+    if (!rotor || !button || !name || !summary || !link || items.length === 0) continue;
+
+    const step = 360 / items.length;
+    let turn = 0;
+    let spinning = false;
+
+    button.addEventListener('click', () => {
+      if (spinning) return;
+      const index = Math.floor(Math.random() * items.length);
+      const item = items[index];
+      if (!item) return;
+      // Whole turns first, then far enough to bring the chosen wedge's middle under the pointer.
+      turn = Math.ceil(turn / 360) * 360 + (reduce ? 0 : 1440) + (360 - (index * step + step / 2));
+      spinning = true;
+      button.setAttribute('aria-disabled', 'true');
+      root.removeAttribute('data-landed');
+      rotor.style.setProperty('--turn', `${turn}deg`);
+      setTimeout(
+        () => {
+          name.textContent = item.title;
+          summary.textContent = item.summary;
+          link.href = item.href;
+          link.hidden = false;
+          root.dataset.landed = '';
+          spinning = false;
+          button.removeAttribute('aria-disabled');
+          const label = button.querySelector('.text');
+          if (label && root.dataset.again) label.textContent = root.dataset.again;
+        },
+        reduce ? 0 : 4300,
+      );
+    });
+  }
+</script>
+
+<style>
+  .wheel {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-6);
+    text-align: center;
+  }
+
+  svg {
+    width: min(100%, 22rem);
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(0 1.25rem 1.5rem rgb(10 12 14 / 0.35));
+  }
+
+  .rotor {
+    transform: rotate(var(--turn, 0deg));
+    transition: transform 4200ms cubic-bezier(0.12, 0.6, 0.08, 1);
+  }
+
+  .wedge {
+    fill: var(--color-ink);
+    stroke: var(--color-gold-light);
+    stroke-width: 0.6;
+  }
+
+  .wedge[data-red] {
+    fill: var(--color-crimson);
+  }
+
+  text {
+    fill: var(--color-paper);
+    font-family: var(--font-body);
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-anchor: middle;
+    dominant-baseline: central;
+    text-transform: uppercase;
+  }
+
+  .rim {
+    fill: none;
+    stroke: var(--color-gold-light);
+    stroke-width: 5;
+  }
+
+  .hub,
+  .pointer {
+    fill: var(--color-gold-light);
+  }
+
+  .pin {
+    fill: var(--color-ink);
+  }
+
+  .pointer {
+    stroke: var(--color-ink);
+    stroke-width: 1;
+  }
+
+  .words {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-4);
+    max-width: 26rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--text-48);
+    font-style: italic;
+  }
+
+  .hint {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  .words :global([aria-disabled='true']) {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  /* Room is kept for the result, so landing never moves the page. */
+  .result {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--space-1);
+    min-height: 8.5rem;
+  }
+
+  .result p {
+    margin: 0;
+  }
+
+  .picked {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: var(--text-36);
+    line-height: var(--line-tight);
+  }
+
+  .summary {
+    color: var(--fg-muted);
+    font-size: var(--text-16);
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .more:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
+  }
+
+  @keyframes landed {
+    from {
+      opacity: 0;
+      translate: 0 0.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wheel[data-landed] .result > * {
+      animation: landed 500ms var(--ease-expo) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rotor {
+      transition: none;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .wheel {
+      grid-template-columns: auto minmax(0, 26rem);
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+      text-align: start;
+    }
+
+    .words,
+    .result {
+      justify-items: start;
+    }
+  }
+</style>

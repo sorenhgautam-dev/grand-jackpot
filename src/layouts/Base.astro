@@ -3,6 +3,7 @@ import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { Font, getImage } from 'astro:assets';
 import entrance from '../assets/photos/entrance.jpg';
+import Chip from '../components/Chip.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { site } from '../data/site';
@@ -37,11 +38,8 @@ const {
   jsonLd,
 } = Astro.props;
 const t = strings(locale);
-// Preload every face a page sets text in, so no font is discovered late (after layout), which
-// would put its download on the critical path. Rozha One sets the headings; Archivo Black the
-// home page's giant English words; Mukta the text. Hindi pages need each face's Devanagari too.
-const rozhaPreloads =
-  locale === 'hi' ? [{ subset: 'latin' }, { subset: 'devanagari' }] : [{ subset: 'latin' }];
+// Preload every face a page sets text in, so no font is discovered late. Fraunces sets
+// the headings (upright and italic); Mukta the text. Hindi pages need Tiro and Mukta's Devanagari.
 const muktaPreloads = [
   { subset: 'latin', weight: '400' },
   { subset: 'latin', weight: '600' },
@@ -96,24 +94,40 @@ const ogUrl = new URL(og.src, Astro.site);
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={imageAlt ?? t.wayIn.stops[4]?.alt ?? site.name} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#0a0c0e" />
+    <meta name="theme-color" content="#f6f2e8" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <Font cssVariable="--font-rozha" preload={rozhaPreloads} />
-    <Font cssVariable="--font-archivo" preload={home} />
+    <Font cssVariable="--font-fraunces" preload={[{ style: 'normal' }, { style: 'italic' }]} />
+    <Font cssVariable="--font-tiro" preload={locale === 'hi'} />
     <Font cssVariable="--font-mukta" preload={muktaPreloads} />
     <script is:inline>
       document.documentElement.classList.add('js');
+      // The curtain plays once per visit, and never for people who ask for less motion.
+      try {
+        if (
+          !sessionStorage.getItem('gj-seen') &&
+          !matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          document.documentElement.classList.add('intro');
+          sessionStorage.setItem('gj-seen', '1');
+        }
+      } catch {
+        // Storage is blocked: skip the curtain.
+      }
     </script>
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
+    <div class="preloader" aria-hidden="true">
+      <Chip class="spinner" />
+      <span lang="en">{site.name}</span>
+    </div>
     <a class="skip" href="#main">
       {t.a11y.skip}
     </a>
     <Header locale={locale} path={path} languagePath={languagePath} overHero={home} />
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" class:list={[{ 'under-header': !home }]}>
       <slot />
     </main>
     <Footer locale={locale} path={languagePath} />
@@ -125,6 +139,63 @@ const ogUrl = new URL(og.src, Astro.site);
 </html>
 
 <style>
+  /* The curtain: a chip flips, the name sits under it, and the whole thing lifts away in about
+     a second and a half. CSS alone ends it, so it can never hang. */
+  .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    place-items: center;
+    align-content: center;
+    gap: var(--space-5);
+    background: var(--color-felt-deep);
+    color: var(--color-gold-light);
+    font-family: var(--font-display);
+    font-size: var(--text-24);
+    font-style: italic;
+  }
+
+  :global(html.intro) {
+    --intro: 1150ms;
+  }
+
+  :global(html.intro) .preloader {
+    display: grid;
+    animation: curtain 650ms var(--ease-in-out) 900ms forwards;
+  }
+
+  :global(html.intro) .preloader :global(.spinner) {
+    width: 5rem;
+    animation: flip 900ms var(--ease-expo) both;
+  }
+
+  :global(html.intro) .preloader span {
+    animation: name-in 700ms var(--ease-expo) 150ms both;
+  }
+
+  @keyframes curtain {
+    to {
+      translate: 0 -100%;
+      visibility: hidden;
+    }
+  }
+
+  @keyframes flip {
+    from {
+      opacity: 0;
+      rotate: y 540deg;
+      scale: 0.5;
+    }
+  }
+
+  @keyframes name-in {
+    from {
+      opacity: 0;
+      translate: 0 0.75rem;
+    }
+  }
+
   .skip {
     position: fixed;
     top: 0.5rem;
@@ -143,5 +214,10 @@ const ogUrl = new URL(og.src, Astro.site);
 
   main:focus {
     outline: none;
+  }
+
+  /* The header is fixed; every page but home starts below it (home's hero runs under it). */
+  .under-header {
+    padding-top: calc(var(--header-full) + env(safe-area-inset-top));
   }
 </style>

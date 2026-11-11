@@ -8,8 +8,66 @@
  *   --accent               gold: labels, numerals, rules, outlined buttons (6.2 or more)
  *   --action, --action-fg  the primary button
  */
+/* Ivory is the page: ink text, umber labels (gold is decoration only on a light ground). */
 :root,
-[data-surface='ink'] {
+[data-surface='ivory'] {
+  --bg: var(--color-ivory);
+  --surface: var(--color-paper);
+  --fg: var(--color-ink);
+  --fg-muted: color-mix(in oklab, var(--color-charcoal) 80%, var(--color-ivory));
+  --line: color-mix(in oklab, var(--color-umber) 24%, transparent);
+  --line-strong: color-mix(in oklab, var(--color-ink) 70%, transparent);
+  --accent: var(--color-copper);
+  --focus: var(--color-ink);
+  --action: var(--color-ink);
+  --action-fg: var(--color-ivory);
+  --action-hover: var(--color-umber);
+  --alert: #b3261e;
+  --wash: color-mix(in oklab, var(--color-umber) 6%, transparent);
+}
+
+[data-surface='sand'] {
+  --bg: var(--color-sand);
+  --surface: var(--color-ivory);
+}
+
+/* The baize: the gaming section is laid out on the green of the tables. */
+[data-surface='felt'] {
+  --bg: var(--color-felt);
+  --surface: var(--color-felt-deep);
+  --fg: var(--color-paper);
+  --fg-muted: color-mix(in oklab, var(--color-paper) 84%, var(--color-felt));
+  --line: color-mix(in oklab, var(--color-gold-light) 40%, transparent);
+  --line-strong: var(--color-gold-light);
+  --accent: var(--color-gold-light);
+  --focus: var(--color-paper);
+  --action: var(--color-gold-light);
+  --action-fg: var(--color-ink);
+  --action-hover: var(--color-paper);
+  --alert: var(--color-paper);
+  --wash: color-mix(in oklab, var(--color-paper) 8%, transparent);
+}
+
+/* The evening band. */
+[data-surface='wine'] {
+  --bg: var(--color-wine);
+  --surface: color-mix(in oklab, var(--color-wine) 70%, var(--color-ink));
+  --fg: var(--color-paper);
+  --fg-muted: color-mix(in oklab, var(--color-paper) 84%, var(--color-wine));
+  --line: color-mix(in oklab, var(--color-gold-light) 36%, transparent);
+  --line-strong: var(--color-gold-light);
+  --accent: var(--color-gold-light);
+  --focus: var(--color-paper);
+  --action: var(--color-gold-light);
+  --action-fg: var(--color-ink);
+  --action-hover: var(--color-paper);
+  --alert: var(--color-paper);
+  --wash: color-mix(in oklab, var(--color-paper) 8%, transparent);
+}
+
+/* The dark bands. Charcoal shares ink's roles and changes only the ground and the lines. */
+[data-surface='ink'],
+[data-surface='charcoal'] {
   --bg: var(--color-ink);
   --surface: var(--color-charcoal);
   --fg: var(--color-paper);
@@ -20,6 +78,7 @@
   --focus: var(--color-gold);
   --action: var(--color-gold);
   --action-fg: var(--color-ink);
+  --action-hover: var(--color-paper);
   --alert: var(--color-alert-light);
   --wash: color-mix(in oklab, var(--color-paper) 6%, transparent);
 }
@@ -42,13 +101,14 @@
   --focus: var(--color-paper);
   --action: var(--color-paper);
   --action-fg: var(--color-charcoal);
+  --action-hover: var(--color-ivory);
   --alert: var(--color-paper);
   --wash: color-mix(in oklab, var(--color-paper) 10%, transparent);
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -59,12 +119,26 @@
     line-height: var(--line-body);
     /* Each display face ships one weight: never fake a bold or an italic. */
     font-synthesis: none;
-    scroll-padding-top: calc(var(--header-height) + 1rem);
+    scroll-padding-top: calc(var(--header-height) + 1.5rem);
   }
 
   [data-surface] {
     background: var(--bg);
     color: var(--fg);
+  }
+
+  :is(
+      [data-surface='ink'],
+      [data-surface='charcoal'],
+      [data-surface='umber'],
+      [data-surface='felt'],
+      [data-surface='wine']
+    ) {
+    color-scheme: dark;
+  }
+
+  [data-surface='ivory'] {
+    color-scheme: light;
   }
 
   :lang(hi) {
@@ -86,10 +160,10 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 400;
+    font-weight: 500;
     line-height: var(--line-tight);
     text-wrap: balance;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   /* Devanagari needs room above and below for its marks. */
@@ -143,7 +217,7 @@
 @utility label {
   color: var(--accent);
   font-size: var(--text-label);
-  font-weight: 600;
+  font-weight: 400;
   line-height: var(--line-snug);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;

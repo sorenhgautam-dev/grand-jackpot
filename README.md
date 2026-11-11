@@ -35,11 +35,12 @@ Deploy `dist/` to Vercel, Netlify or Cloudflare Pages with `npm run build` as th
 - `src/data/site.ts`: facts used by code (name, address, phones, timezone, opening hours).
 - `src/i18n/en.ts`, `src/i18n/hi.ts`: interface copy. Hindi is typed against English, so a missing string fails the build.
 - `src/content/`: games, events, dining venues, packages, FAQs, and the About, Privacy and Responsible gaming pages, one file per language.
-- `src/styles/tokens.css`: colours, type, spacing, motion. Black and gold from the client's eight colours: ink #0A0C0E page, charcoal #231F1E bands and cards, umber #59432D packages band, gold #AE9F73 hairlines, labels, numerals and main buttons, paper #FDFDFD text, stone #C5C4C2 secondary text, grey #7B7979 field borders. Rozha One for headings, Archivo Black for the giant English words, Mukta for text. Photographs, cards and buttons are sharp rectangles.
-- `src/styles/base.css`: the ink, charcoal and umber surfaces. Each sets the same roles (`--bg`, `--fg`, `--fg-muted`, `--line`, `--accent`, `--action`), and components use only the roles.
-- `src/components/Hero.astro`: the name set as the picture, over an inset photograph of the entrance.
+- `src/styles/tokens.css`: colours, type, spacing, motion. An ivory page (#F6F2E8, the client's paper warmed toward gold) with a sand band (#ECE5D6), from the client's colours: ink #0A0C0E text, hero and footer; charcoal #231F1E the evening band; umber #59432D labels and the packages band; gold #AE9F73 hairlines and labels on the dark bands. Fraunces (variable weight, upright and italic) for headings, Tiro Devanagari Hindi for Hindi headings, Mukta for text. Photographs of the games stand in arches, after the copper arch over the casino's door; other photographs and buttons are sharp rectangles.
+- `src/styles/base.css`: the ivory, sand, ink, charcoal and umber surfaces. Each sets the same roles (`--bg`, `--fg`, `--fg-muted`, `--line`, `--accent`, `--action`), and components use only the roles.
+- `src/components/Hero.astro`: the gaming floor, full bleed and toned down, with the name centred over it.
+- `src/components/Numeral.astro`: the I to VII chapter marks that open each home page section. Words in `*asterisks*` in a heading's copy are set in italic (`src/lib/emphasis.ts`).
 - `src/components/WayIn.astro`: the signature, the route from the hotel gate to the gaming floor in seven photographs. It works without JavaScript.
-- `src/styles/motion.css`, `src/scripts/motion.ts`: the cursor and the reveals. Headings, photographs and list rows play their entrance once, when they first come into view. With reduced motion, or without JavaScript, everything is simply there.
+- `src/styles/motion.css`, `src/scripts/motion.ts`: the reveals. Headings, photographs and list rows play their entrance once, when they first come into view. With reduced motion, or without JavaScript, everything is simply there.
 
 There is no sample content: events, packages and games are the casino's own. The Hindi translations were drafted for the demo and need review by a native speaker.
 

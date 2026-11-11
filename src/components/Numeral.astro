@@ -1,0 +1,39 @@
+---
+/**
+ * The chapter mark that opens each section of the home page: a roman numeral in a square drawn
+ * with two hairlines. Decorative, so screen readers skip it; the heading names the section.
+ */
+interface Props {
+  n: number;
+  class?: string | undefined;
+}
+
+const { n, class: className } = Astro.props;
+const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+---
+
+<span class:list={['numeral', className]} aria-hidden="true" lang="en">
+  <span class="inner">{romans[n - 1] ?? String(n)}</span>
+</span>
+
+<style>
+  .numeral {
+    display: inline-grid;
+    padding: 0.3125rem;
+    border: var(--rule) solid var(--line);
+  }
+
+  .inner {
+    display: grid;
+    place-items: center;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding-inline: 0.5rem;
+    border: var(--rule) solid var(--line);
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: var(--text-18);
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+</style>

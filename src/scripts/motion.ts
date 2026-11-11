@@ -1,15 +1,15 @@
 /*
- * Reveals for everyone who hasn't asked for reduced motion, and a cursor for mice and trackpads.
+ * Reveals for everyone who hasn't asked for reduced motion.
  * See styles/motion.css: this script only marks elements; CSS does the moving.
  */
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /** What reveals, and how. Photos that are a page's main image load eagerly and stay put. */
-const targets: [selector: string, kind: 'heading' | 'photo' | 'item'][] = [
+const targets: [selector: string, kind: 'heading' | 'photo' | 'item' | 'draw'][] = [
   ['main h2', 'heading'],
   ['main .photo[data-ratio]:not([data-priority], .stage)', 'photo'],
   ['main [data-stagger] > *', 'item'],
+  ['[data-draw]', 'draw'],
 ];
 
 function reveal(): void {
@@ -55,61 +55,26 @@ function reveal(): void {
   }
 }
 
-function cursor(): void {
-  const root = document.createElement('div');
-  root.className = 'cursor';
-  root.setAttribute('aria-hidden', 'true');
-  root.innerHTML = '<span class="cursor-dot"></span>';
-  document.body.append(root);
-  document.documentElement.dataset.cursor = '';
-
-  let x = 0;
-  let y = 0;
-  let shownX = 0;
-  let shownY = 0;
-  let frame = 0;
-
-  const follow = (): void => {
-    shownX += (x - shownX) * 0.35;
-    shownY += (y - shownY) * 0.35;
-    root.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
-    frame = Math.abs(x - shownX) + Math.abs(y - shownY) > 0.2 ? requestAnimationFrame(follow) : 0;
-  };
-
+/** Every tap or click on something that does something throws a chip-edge ring from that point. */
+function clicks(): void {
   addEventListener(
-    'pointermove',
+    'pointerdown',
     (event) => {
-      if (event.pointerType !== 'mouse') return;
-      x = event.clientX;
-      y = event.clientY;
-      if (!('visible' in root.dataset) || reduce) {
-        shownX = x;
-        shownY = y;
-        root.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      } else if (!frame) frame = requestAnimationFrame(follow);
-      root.dataset.visible = '';
-
       const target = event.target instanceof Element ? event.target : null;
-      root.dataset.state = target?.closest(
-        'textarea, select, input:not([type="radio"], [type="checkbox"])',
-      )
-        ? 'text'
-        : target?.closest('a, button, label, summary, [data-link-zone]')
-          ? 'link'
-          : '';
+      if (!target?.closest('a, button, label, summary')) return;
+      const ring = document.createElement('span');
+      ring.className = 'click-chip';
+      ring.style.left = `${event.clientX}px`;
+      ring.style.top = `${event.clientY}px`;
+      document.body.append(ring);
+      ring.addEventListener('animationend', () => ring.remove());
     },
     { passive: true },
   );
-
-  document.addEventListener('mouseout', (event) => {
-    if (!event.relatedTarget) delete root.dataset.visible;
-  });
-  addEventListener('pointerdown', () => (root.dataset.down = ''));
-  addEventListener('pointerup', () => delete root.dataset.down);
 }
 
 if (!reduce && 'IntersectionObserver' in window) reveal();
-if (fine) cursor();
+if (!reduce) clicks();
 
 // A module, so its names stay its own.
 export {};

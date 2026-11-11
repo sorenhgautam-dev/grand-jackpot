@@ -1,33 +1,58 @@
 ---
-import { primaryNav } from '../data/nav';
+import { primaryNav, secondaryNav } from '../data/nav';
 import { localePath, strings, type Locale } from '../lib/i18n';
-import Button from './Button.astro';
-import Icon from './Icon.astro';
 import LanguageSwitch from './LanguageSwitch.astro';
 import Logo from './Logo.astro';
 import MenuDialog from './MenuDialog.astro';
-import OpeningStatus from './OpeningStatus.astro';
 
 interface Props {
   locale: Locale;
   path: string;
   /** Where the language switch points: this page in the other language. */
   languagePath: string;
-  /** Clear over the home hero until it scrolls away. */
+  /** Clear over the home hero until the page scrolls. */
   overHero?: boolean;
 }
 
 const { locale, path, languagePath, overHero = false } = Astro.props;
 const t = strings(locale);
 const isCurrent = (itemPath: string) => path.startsWith(itemPath);
+/** The row under the bar: the four sections, then About and Contact. */
+const row = [
+  ...primaryNav,
+  ...secondaryNav.filter((item) => item.key === 'about' || item.key === 'contact'),
+];
 ---
 
-<header class="header" data-header data-surface="ink" data-over-hero={overHero ? '' : undefined}>
+<header class="header" data-header data-over-hero={overHero ? '' : undefined}>
   <div class="bar wrap">
+    <button
+      class="menu-button"
+      commandfor="menu"
+      command="show-modal"
+      aria-haspopup="dialog"
+      aria-controls="menu"
+    >
+      <span class="lines" aria-hidden="true"></span>
+      <span>{t.a11y.menu}</span>
+    </button>
     <Logo locale={locale} current={path === '/'} />
-    <nav class="primary" aria-label={t.a11y.mainNav}>
-      <ul>
-        {primaryNav.map((item) => (
+    <div class="end">
+      <LanguageSwitch locale={locale} path={languagePath} />
+      <a
+        class="visit"
+        href={localePath(locale, '/visit/')}
+        aria-current={isCurrent('/visit/') ? 'page' : undefined}
+      >
+        {t.common.planVisit}
+      </a>
+    </div>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+  <div class="row-frame">
+    <nav class="row" aria-label={t.a11y.mainNav}>
+      <ul class="wrap">
+        {row.map((item) => (
           <li>
             <a
               href={localePath(locale, item.path)}
@@ -39,32 +64,23 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
         ))}
       </ul>
     </nav>
-    <div class="aside">
-      <OpeningStatus locale={locale} class="header-status" />
-      <LanguageSwitch locale={locale} path={languagePath} />
-      <Button href={localePath(locale, '/visit/')}>{t.common.planVisit}</Button>
-    </div>
-    <button
-      class="menu-button"
-      commandfor="menu"
-      command="show-modal"
-      aria-haspopup="dialog"
-      aria-controls="menu"
-    >
-      <Icon name="menu" />
-      <span>{t.a11y.menu}</span>
-    </button>
   </div>
 </header>
 <MenuDialog locale={locale} path={path} languagePath={languagePath} />
 
+<script>
+  import '../scripts/header';
+</script>
+
 <style>
+  /* Fixed, so tucking the row of links away never moves the page under it. */
   .header {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    inset: 0 0 auto;
     z-index: 10;
     padding-top: env(safe-area-inset-top);
-    background: transparent;
+    color: var(--fg);
+    transition: color var(--dur-base) var(--ease-out);
   }
 
   .header::before {
@@ -74,122 +90,225 @@ const isCurrent = (itemPath: string) => path.startsWith(itemPath);
     z-index: -1;
     border-bottom: var(--rule) solid var(--line);
     background: var(--bg);
-    opacity: 1;
-    transition: opacity var(--dur-quick) var(--ease-out);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+
+  /* Over the hero the header is clear, with the light text of a dark surface. Without
+     JavaScript it stays solid, since nothing would turn it solid on scroll. */
+  :global(.js) .header[data-over-hero]:not([data-solid]) {
+    --fg: var(--color-paper);
+    --line: color-mix(in oklab, var(--color-paper) 28%, transparent);
+    --accent: var(--color-gold);
+    --focus: var(--color-paper);
   }
 
   :global(.js) .header[data-over-hero]:not([data-solid])::before {
     opacity: 0;
   }
 
-  .bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    height: var(--header-height);
+  /* How far down the page you are, as a copper line along the header's lower edge. */
+  .progress {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 1;
+    height: 2px;
+    background: var(--color-copper);
+    scale: 0 1;
+    transform-origin: 0 50%;
   }
 
-  .primary,
-  .aside {
-    display: none;
+  @keyframes progress {
+    to {
+      scale: 1 1;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .progress {
+      animation: progress linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+
+  /* Menu at the start, the name in the true centre, the visit link at the end. */
+  .bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-4);
+    height: var(--header-height);
   }
 
   .menu-button {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
+    justify-self: start;
     min-height: var(--tap);
-    margin-inline-end: -0.5rem;
-    padding: 0 0.5rem;
+    margin-inline-start: calc(-1 * var(--space-2));
+    padding: 0 var(--space-2);
     border: 0;
     border-radius: var(--radius-control);
     background: transparent;
     color: inherit;
     font: inherit;
-    font-size: var(--text-16);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
     cursor: pointer;
-    transition: transform var(--dur-press) var(--ease-out);
   }
 
-  .menu-button:active {
-    transform: scale(var(--press-scale));
+  .menu-button:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
   }
 
-  @media (width >= 64rem) {
-    .menu-button {
-      display: none;
-    }
-
-    .primary,
-    .aside {
-      display: flex;
-      align-items: center;
-    }
-
-    .primary ul {
-      display: flex;
-      gap: 1.5rem;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    /* Small uppercase links, with a line that draws in under the one you point at. */
-    .primary a {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      min-height: var(--tap);
-      font-size: var(--text-label);
-      font-weight: 600;
-      letter-spacing: var(--tracking-label);
-      text-transform: uppercase;
-      text-decoration: none;
-    }
-
-    .primary a:lang(hi) {
-      font-size: var(--text-16);
-      letter-spacing: 0;
-    }
-
-    .primary a::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      bottom: 0.6rem;
-      left: 0;
-      height: 1px;
-      background: currentColor;
-      scale: 0 1;
-      transform-origin: 100% 50%;
-      transition: scale var(--dur-hover) var(--ease-expo);
-    }
-
-    .primary [aria-current='page']::after {
-      background: var(--accent);
-      scale: 1 1;
-    }
-
-    .aside {
-      gap: 1.25rem;
-    }
-
-    .header :global(.logo .name) {
-      display: none;
-    }
+  /* Two hairlines that draw closer when you point at them. */
+  .lines {
+    position: relative;
+    width: 1.375rem;
+    height: 0.5rem;
+    border-block: var(--rule) solid currentColor;
+    transition: height var(--dur-base) var(--ease-out);
   }
 
-  @media (hover: hover) and (width >= 64rem) {
-    .primary a:hover::after {
+  /* Phones show the lines only; the word stays for screen readers. */
+  .menu-button > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .end {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: var(--space-5);
+  }
+
+  .visit {
+    display: none;
+  }
+
+  .visit,
+  .row a {
+    position: relative;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .visit:lang(hi),
+  .row a:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
+  }
+
+  /* A line draws in under the link you point at, and stays under the current page. */
+  .visit::after,
+  .row a::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0.625rem;
+    left: 0;
+    height: var(--rule);
+    background: currentColor;
+    scale: 0 1;
+    transform-origin: 100% 50%;
+    transition: scale var(--dur-hover) var(--ease-expo);
+  }
+
+  [aria-current='page']::after {
+    background: var(--accent);
+    scale: 1 1;
+  }
+
+  /* The row of links: wide screens only. It folds away once the page scrolls. */
+  .row-frame {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    .menu-button:hover .lines {
+      height: 0.25rem;
+    }
+
+    .visit:hover::after,
+    .row a:hover::after {
       scale: 1 1;
       transform-origin: 0 50%;
     }
   }
 
-  @media (width >= 80rem) {
-    .header :global(.logo .name) {
-      display: inline;
+  @media (width >= 30rem) {
+    .menu-button > span:last-child {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .visit {
+      display: inline-flex;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .row-frame {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition:
+        grid-template-rows var(--dur-dialog) var(--ease-out),
+        opacity var(--dur-base) var(--ease-out);
+    }
+
+    .header[data-solid] .row-frame {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        grid-template-rows var(--dur-dialog) var(--ease-out),
+        opacity var(--dur-quick) var(--ease-out),
+        visibility 0s linear var(--dur-dialog);
+    }
+
+    .row {
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .row ul {
+      display: flex;
+      justify-content: center;
+      gap: clamp(var(--space-6), 4vw, var(--space-8));
+      height: var(--nav-row);
+      margin: 0 auto;
+      list-style: none;
+      border-top: var(--rule) solid var(--line);
+    }
+
+    .row a {
+      display: inline-flex;
+      height: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row-frame,
+    .header[data-solid] .row-frame {
+      transition: none;
     }
   }
 </style>

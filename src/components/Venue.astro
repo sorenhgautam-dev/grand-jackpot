@@ -9,9 +9,18 @@ interface Props {
   headingLevel?: 'h2' | 'h3';
   /** Include the longer description from the entry's body. */
   full?: boolean;
+  ratio?: 'landscape' | 'portrait';
+  sizes?: string;
 }
 
-const { locale, venue, headingLevel: Heading = 'h3', full = false } = Astro.props;
+const {
+  locale,
+  venue,
+  headingLevel: Heading = 'h3',
+  full = false,
+  ratio = 'landscape',
+  sizes = '(min-width: 48rem) 50vw, 100vw',
+} = Astro.props;
 const t = strings(locale);
 ---
 
@@ -19,8 +28,8 @@ const t = strings(locale);
   <Photo
     src={venue.data.photo}
     alt={venue.data.photoAlt}
-    ratio="landscape"
-    sizes="(min-width: 48rem) 50vw, 100vw"
+    ratio={ratio}
+    sizes={sizes}
   />
   <Heading>{venue.data.title}</Heading>
   <p class="served">
@@ -34,7 +43,7 @@ const t = strings(locale);
 <style>
   .venue :is(h2, h3) {
     margin: 1.25rem 0 0.25rem;
-    font-size: var(--text-24);
+    font-size: var(--text-36);
   }
 
   p {
@@ -44,6 +53,14 @@ const t = strings(locale);
 
   .served {
     margin-top: 0;
-    font-weight: 600;
+    color: var(--accent);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .served:lang(hi) {
+    font-size: var(--text-16);
+    letter-spacing: 0;
   }
 </style>
